@@ -1,26 +1,160 @@
 @import "tailwindcss";
 
+@theme {
+  --color-tinta: #0b1733;
+  --color-tinta-2: #13224a;
+  --color-papel: #eef3ea;
+  --color-renglon: #c9d8c3;
+  --color-pluma: #3157e0;
+  --color-cuadre: #d23a2c;
+  --color-ambar: #f2a541;
+  --color-claro: #f3f5f1;
+
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-plex), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-libro: 4px;
+  --radius-vidrio: 22px;
+  --radius-boton: 12px;
+
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --breakpoint-xs: 30rem;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --gutter: 20px;
+  --nav-h: 72px;
 }
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@media (min-width: 768px) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --gutter: 32px;
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 64px;
   }
 }
 
+html {
+  background: var(--color-tinta);
+  scroll-behavior: auto;
+}
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-tinta);
+  color: var(--color-claro);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.55;
+  font-variant-numeric: tabular-nums lining-nums;
+  -webkit-font-smoothing: antialiased;
+}
+@media (min-width: 1024px) {
+  body {
+    font-size: 17.5px;
+  }
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.cifras {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.contenedor {
+  width: 100%;
+  max-width: 1320px;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* Foco visible: 2 px pluma, offset 3 px. */
+:focus-visible {
+  outline: 2px solid var(--color-pluma);
+  outline-offset: 3px;
+}
+.sobre-tinta :focus-visible {
+  outline-color: #8fa6ff;
+}
+
+/* Panel de vidrio (hero y mapa). */
+.vidrio {
+  background: rgba(11, 23, 51, 0.45);
+  border: 1px solid rgba(243, 245, 241, 0.08);
+  border-radius: var(--radius-vidrio);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+
+/* Papel columnar: 12 columnas tenues, coinciden con la retícula. */
+.papel-columnar {
+  background-color: var(--color-papel);
+  color: var(--color-tinta);
+  background-image: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--color-renglon) 35%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: calc((100% - 2 * var(--gutter)) / 12) 100%;
+  background-position: var(--gutter) 0;
+}
+
+.texto-2 {
+  opacity: 0.72;
+}
+
+.salto-seguro {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -64px;
+  z-index: 100;
+  background: var(--color-papel);
+  color: var(--color-tinta);
+  padding: 12px 16px;
+  border-radius: var(--radius-boton);
+  font-weight: 500;
+}
+.skip-link:focus {
+  top: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+html[data-menu="open"] .barra-movil {
+  display: none;
+}
+
+/* Hero: estado inicial de la secuencia de entrada (la anima GSAP; ver Hero.tsx).
+   Con reduced motion no se oculta nada. Sin JS, el <noscript> del layout lo revierte. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-hero] {
+    opacity: 0;
+  }
 }
