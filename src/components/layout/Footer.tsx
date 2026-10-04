@@ -10,7 +10,7 @@ const link =
 export function Footer() {
   const year = new Date().getFullYear();
   return (
-    <footer className="sobre-tinta bg-tinta pb-[calc(88px+env(safe-area-inset-bottom))] pt-16 text-claro md:pb-12 md:pt-20">
+    <footer className="sobre-tinta relative z-10 bg-tinta pb-[calc(88px+env(safe-area-inset-bottom))] pt-16 text-claro md:pb-12 md:pt-20">
       <div className="contenedor">
         <div className="grid gap-12 lg:grid-cols-12">
           <div className="lg:col-span-5">

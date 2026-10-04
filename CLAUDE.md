@@ -4,7 +4,7 @@
 
 Sitio para vender servicios contables del C.P. Erick Domínguez Del Prado. Dominio destino: `contabilidad.erickddp.com`. Repo: `Erickddp/eddp-contabilidad-web` (privado).
 
-**Fuente de verdad:** `docs/PROMPT-MAESTRO.md`. Léelo completo antes de tocar código y trabaja solo la fase que se te pida (sección 14). Sitio en español de México, tuteando.
+**Fuente de verdad:** `docs/CAMBIO-V2.md` (tiene prioridad) y `docs/PROMPT-MAESTRO.md`. Lee los dos completos antes de tocar código y trabaja solo la fase que se te pida. Sitio en español de México, tuteando.
 
 ## Comandos
 

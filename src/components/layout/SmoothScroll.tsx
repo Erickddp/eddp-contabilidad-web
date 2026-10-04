@@ -2,9 +2,16 @@
 
 import { useEffect } from "react";
 import Lenis from "lenis";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { prefersReducedMotion } from "@/lib/motion";
 
-/** Scroll suave con Lenis. Apagado con reduced motion y en táctil (scroll nativo). */
+gsap.registerPlugin(ScrollTrigger);
+
+/**
+ * Scroll suave con Lenis, sincronizado con ScrollTrigger y el ticker de GSAP.
+ * Apagado con reduced motion y en táctil (scroll nativo).
+ */
 export function SmoothScroll() {
   useEffect(() => {
     const touch = window.matchMedia("(pointer: coarse)").matches;
@@ -15,12 +22,10 @@ export function SmoothScroll() {
       easing: (t) => 1 - Math.pow(1 - t, 4),
       anchors: true,
     });
-    let raf = 0;
-    const loop = (time: number) => {
-      lenis.raf(time);
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
+    lenis.on("scroll", ScrollTrigger.update);
+    const tick = (time: number) => lenis.raf(time * 1000);
+    gsap.ticker.add(tick);
+    gsap.ticker.lagSmoothing(0);
 
     // El menú móvil bloquea el scroll del body: Lenis se detiene mientras está abierto.
     const mo = new MutationObserver(() => {
@@ -30,7 +35,7 @@ export function SmoothScroll() {
     mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-menu"] });
 
     return () => {
-      cancelAnimationFrame(raf);
+      gsap.ticker.remove(tick);
       mo.disconnect();
       lenis.destroy();
     };

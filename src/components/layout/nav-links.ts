@@ -1,6 +1,6 @@
 export const navLinks = [
   { label: "Servicios", href: "/#servicios" },
-  { label: "Frontera", href: "/#frontera" },
+  { label: "Estrategia", href: "/#estrategia" },
   { label: "Precios", href: "/#precios" },
   { label: "Casos", href: "/#casos" },
   { label: "Sobre mí", href: "/#sobre-mi" },

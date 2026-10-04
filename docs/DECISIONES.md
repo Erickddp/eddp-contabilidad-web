@@ -10,3 +10,14 @@ Registro de decisiones de diseño y técnicas que no estaban especificadas en `P
 - Los links de la nav apuntan a anclas (/#servicios, etc.) que existirán en la fase 2; los del footer a landings de la fase 4 (404 hasta entonces).
 - Playwright levanta `npm run build && npm run start`; las capturas van a `tests/capturas/` (ignorado en git).
 - Lenis con `anchors: true` y apagado en táctil y reduced motion; se sincronizará con ScrollTrigger en la fase 2.
+
+## Cambio de dirección V2 (la balanza)
+
+- Hero y tarjeta del pago provisional de la fase 1 eliminados (HeroBackground, LedgerCard); las decisiones de arriba sobre ellos quedan sin efecto.
+- La balanza "nivelada" del hero y la del CTA final usan la misma muestra de partículas que la desequilibrada, solo cambia la inclinación: así el primer scroll la equilibra sin que las partículas crucen de platillo.
+- El equilibrio del hero ocurre en el primer 35% del alto del hero (el documento dice 0–40%) para que no se encime con el inicio de la disolución de la siguiente sección.
+- Encuadre por "parada" (forma + capa: hero, centro, derecha, cta) en fracciones del área visible, para que la figura se adapte a cualquier proporción de pantalla.
+- Todas las formas comparten una permutación fija: cualquier prefijo es una muestra al azar, así el recorte a la mitad por fps bajos usa `drawRange` sin perder piezas.
+- Sin bloom ni `@react-three/postprocessing`: el brillo se simula en el fragment shader con caída radial y blending aditivo también en desktop; ahorra un pase completo de render y peso de bundle.
+- h1 del hero en desktop a `clamp(2.75rem, 6vw, 6rem)` y sin corte de renglón en ≥640 px, para que "Tus impuestos," quepa en 6 columnas.
+- Playwright usa su propio servidor de producción en el puerto 3100 para no chocar con `npm run dev`.

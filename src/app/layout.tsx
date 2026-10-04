@@ -5,6 +5,8 @@ import { MobileActionBar } from "@/components/layout/MobileActionBar";
 import { Nav } from "@/components/layout/Nav";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { WhatsAppFab } from "@/components/layout/WhatsAppFab";
+import { ParticleCanvas } from "@/components/particles/ParticleCanvas";
+import { ParticleScroll } from "@/components/particles/ParticleScroll";
 import "./globals.css";
 
 const bricolage = Bricolage_Grotesque({
@@ -31,7 +33,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0B1733",
+  themeColor: "#070F24",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -46,14 +48,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <a href="#contenido" className="skip-link">
           Saltar al contenido
         </a>
+        <ParticleCanvas />
         <Nav />
-        <main id="contenido" className="flex-1">
+        <main id="contenido" className="relative z-10 flex-1">
           {children}
         </main>
         <Footer />
         <MobileActionBar />
         <WhatsAppFab />
         <SmoothScroll />
+        <ParticleScroll />
       </body>
     </html>
   );

@@ -9,6 +9,7 @@
   --color-cuadre: #d23a2c;
   --color-ambar: #f2a541;
   --color-claro: #f3f5f1;
+  --color-noche: #070f24; /* fondo del canvas de la balanza */
 
   --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-plex), ui-sans-serif, system-ui, sans-serif;
@@ -38,7 +39,7 @@
 }
 
 html {
-  background: var(--color-tinta);
+  background: var(--color-noche);
   scroll-behavior: auto;
 }
 html.lenis,
@@ -50,7 +51,7 @@ html.lenis body {
 }
 
 body {
-  background: var(--color-tinta);
+  background: var(--color-noche);
   color: var(--color-claro);
   font-family: var(--font-sans);
   font-size: 16px;
@@ -145,6 +146,11 @@ h4 {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Fondo fijo de la balanza: más profundo que tinta, con un halo tinta-2 al centro. */
+.fondo-balanza {
+  background: radial-gradient(ellipse 70% 55% at 50% 45%, #13224a 0%, var(--color-noche) 70%);
 }
 
 html[data-menu="open"] .barra-movil {

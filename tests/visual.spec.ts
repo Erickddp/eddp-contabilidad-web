@@ -1,13 +1,19 @@
 import { test } from "@playwright/test";
 
-const anchos = [375, 768, 1440];
+// Se revisa primero 375 (mobile-first), luego 768 y 1440.
+const vistas = [
+  { width: 375, height: 812 },
+  { width: 768, height: 1024 },
+  { width: 1440, height: 900 },
+];
 
-for (const width of anchos) {
-  test(`captura home a ${width}px`, async ({ page }) => {
-    await page.setViewportSize({ width, height: width < 800 ? 812 : 900 });
+for (const v of vistas) {
+  test(`captura home a ${v.width}px`, async ({ page }) => {
+    await page.setViewportSize(v);
     await page.goto("/");
-    // Espera a que termine la secuencia de entrada del hero (≈3.3 s).
-    await page.waitForTimeout(3800);
-    await page.screenshot({ path: `tests/capturas/home-${width}.png`, fullPage: true });
+    // Entrada del hero + convergencia de la balanza.
+    await page.waitForTimeout(4000);
+    await page.screenshot({ path: `tests/capturas/home-${v.width}.png` });
+    await page.screenshot({ path: `tests/capturas/home-${v.width}-completa.png`, fullPage: true });
   });
 }
