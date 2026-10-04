@@ -3,115 +3,161 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { Carrusel } from "@/components/ui/Carrusel";
+import { Cifra } from "@/components/ui/Cifra";
+import { Desplegable } from "@/components/ui/Desplegable";
 import { preciosCopy } from "@/content/home";
 import { extras, plans, pricingConfig, type Plan } from "@/content/pricing";
 import { trackWhatsapp } from "@/lib/analytics";
 import { waLink } from "@/lib/whatsapp";
-import { Cifra } from "@/components/ui/Cifra";
 
 const fmt = (n: number) => `$${n.toLocaleString("es-MX")}`;
+const VISIBLES = 3;
 
 function precioMensual(plan: Plan, anual: boolean) {
   if (plan.monthly === null) return null;
   return anual ? Math.round(plan.monthly * (1 - pricingConfig.annualDiscount)) : plan.monthly;
 }
 
-/** Precios en el home: planes mensuales con toggle mensual/anual. */
+function PlanCard({ p, anual }: { p: Plan; anual: boolean }) {
+  const precio = precioMensual(p, anual);
+  const resto = p.includes.slice(VISIBLES);
+  return (
+    <article
+      data-plan
+      className={`flex h-full flex-col rounded-vidrio border bg-tinta-2 p-5 md:p-6 ${
+        p.featured ? "border-pluma shadow-[inset_0_0_0_1px_var(--color-pluma)]" : "border-claro/10"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <h3 className="font-display text-xl font-semibold tracking-[-0.02em]">{p.name}</h3>
+        {p.featured && (
+          <span className="shrink-0 rounded-full bg-pluma/20 px-2.5 py-0.5 text-xs font-medium text-[#b4c4ff]">
+            {preciosCopy.destacado}
+          </span>
+        )}
+      </div>
+      <p className="mt-1 text-sm text-claro/65">{p.audience}</p>
+
+      <div className="cifras mt-4">
+        {precio === null ? (
+          <p className="font-display text-2xl font-semibold">Cotización</p>
+        ) : (
+          <p className="flex items-baseline gap-1.5">
+            <span className="text-xs text-claro/60">Desde</span>
+            <span className="font-display text-3xl font-semibold leading-none tracking-[-0.02em]">
+              <Cifra value={fmt(precio)} />
+            </span>
+            <span className="text-xs text-claro/60">/mes{pricingConfig.pricesPlusTax ? " + IVA" : ""}</span>
+          </p>
+        )}
+      </div>
+
+      <ul className="mb-3 mt-4 space-y-1.5 text-sm text-claro/85">
+        {p.includes.slice(0, VISIBLES).map((inc) => (
+          <li key={inc} className="flex gap-2">
+            <span aria-hidden="true" className="mt-2 h-1 w-1 shrink-0 rounded-full bg-pluma" />
+            {inc}
+          </li>
+        ))}
+      </ul>
+      {resto.length > 0 && (
+        <Desplegable label={`Ver todo (${resto.length} más)`} className="mt-auto">
+          <ul className="space-y-1.5 text-sm text-claro/85">
+            {resto.map((inc) => (
+              <li key={inc} className="flex gap-2">
+                <span aria-hidden="true" className="mt-2 h-1 w-1 shrink-0 rounded-full bg-pluma" />
+                {inc}
+              </li>
+            ))}
+          </ul>
+        </Desplegable>
+      )}
+      <Button
+        href={waLink("plan", {
+          plan: p.name,
+          precio: precio === null ? "cotización" : `${fmt(precio)}/mes`,
+        })}
+        external
+        size="sm"
+        variant={p.featured ? "primario" : "secundario"}
+        className={`w-full ${resto.length > 0 ? "mt-3" : "mt-auto"}`}
+        onClick={() => trackWhatsapp("precios", "plan", p.id)}
+      >
+        {preciosCopy.boton}
+      </Button>
+    </article>
+  );
+}
+
+/** Precios en el home: planes simples, el detalle encapsulado y toggle mensual/anual. */
 export function Precios() {
   const [anual, setAnual] = useState(false);
 
   return (
-    <section id="precios" data-forma="5" data-wa="general" className="relative py-24 md:py-32">
+    <section id="precios" data-forma="5" data-wa="general" className="relative py-16 md:py-24">
       <div className="contenedor">
-        <h2 className="h2 legible max-w-[20ch] text-claro">{preciosCopy.titulo}</h2>
-        <p className="legible mt-4 max-w-[60ch] text-claro/80 md:text-lg">{preciosCopy.intro}</p>
-
-        <div
-          role="group"
-          aria-label="Forma de pago"
-          className="mt-8 inline-flex rounded-boton border border-claro/20 bg-noche/60 p-1"
-        >
-          {[
-            { v: false, l: "Mensual" },
-            { v: true, l: `Anual (−${pricingConfig.annualDiscount * 100}%)` },
-          ].map((o) => (
-            <button
-              key={o.l}
-              type="button"
-              aria-pressed={anual === o.v}
-              onClick={() => setAnual(o.v)}
-              className={`min-h-12 cursor-pointer rounded-[9px] px-5 text-[15px] font-medium transition-colors duration-150 ${
-                anual === o.v ? "bg-pluma text-white" : "text-claro/80 hover:text-claro"
-              }`}
-            >
-              {o.l}
-            </button>
-          ))}
-        </div>
-
-        <ul data-planes className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {plans.map((p) => {
-            const precio = precioMensual(p, anual);
-            return (
-              <li
-                key={p.id}
-                data-plan
-                className={`relative flex flex-col rounded-libro border bg-papel p-6 text-tinta ${
-                  p.featured ? "border-pluma outline outline-2 outline-pluma" : "border-renglon"
+        <div className="md:flex md:items-end md:justify-between md:gap-8">
+          <div>
+            <h2 className="h2 legible max-w-[20ch] text-claro">{preciosCopy.titulo}</h2>
+            <p className="legible mt-3 max-w-[52ch] text-claro/80">{preciosCopy.intro}</p>
+          </div>
+          <div
+            role="group"
+            aria-label="Forma de pago"
+            className="mt-5 inline-flex shrink-0 rounded-boton border border-claro/20 bg-noche/70 p-1 md:mt-0"
+          >
+            {[
+              { v: false, l: "Mensual" },
+              { v: true, l: `Anual −${pricingConfig.annualDiscount * 100}%` },
+            ].map((o) => (
+              <button
+                key={o.l}
+                type="button"
+                aria-pressed={anual === o.v}
+                onClick={() => setAnual(o.v)}
+                className={`min-h-11 cursor-pointer rounded-[9px] px-4 text-sm font-medium transition-colors duration-150 ${
+                  anual === o.v ? "bg-pluma text-white" : "text-claro/75 hover:text-claro"
                 }`}
               >
-                {p.featured && (
-                  <p className="mb-3 text-sm font-medium text-pluma">{preciosCopy.destacado}</p>
-                )}
-                <h3 className="font-display text-2xl font-semibold tracking-[-0.02em]">{p.name}</h3>
-                <p className="mt-1 text-[15px] text-tinta/70">{p.audience}</p>
-                <div className="cifras mt-5 border-y border-renglon py-4">
-                  {precio === null ? (
-                    <p className="font-display text-3xl font-semibold">Cotización</p>
-                  ) : (
-                    <p className="flex items-baseline gap-1.5">
-                      <span className="text-sm text-tinta/70">Desde</span>
-                      <span className="font-display text-[2.4rem] font-semibold leading-none tracking-[-0.02em]">
-                        <Cifra value={fmt(precio)} />
-                      </span>
-                      <span className="text-sm text-tinta/70">
-                        /mes{pricingConfig.pricesPlusTax ? " + IVA" : ""}
-                      </span>
-                    </p>
-                  )}
-                </div>
-                <ul className="mt-4 flex-1 text-[15px]">
-                  {p.includes.map((inc) => (
-                    <li key={inc} className="border-b border-renglon/70 py-2 last:border-0">
-                      {inc}
-                    </li>
-                  ))}
-                </ul>
-                <Button
-                  href={waLink("plan", {
-                    plan: p.name,
-                    precio: precio === null ? "cotización" : `${fmt(precio)}/mes`,
-                  })}
-                  external
-                  variant="papel-oscuro"
-                  className="mt-5 w-full"
-                  onClick={() => trackWhatsapp("precios", "plan", p.id)}
-                >
-                  {preciosCopy.boton}
-                </Button>
-              </li>
-            );
-          })}
-        </ul>
+                {o.l}
+              </button>
+            ))}
+          </div>
+        </div>
 
-        <p className="legible mt-8 max-w-[70ch] text-[15px] text-claro/80">
-          Extras: {extras.nomina.name.toLowerCase()} desde {fmt(extras.nomina.monthly)}/mes,{" "}
-          {extras.facturacion.name.toLowerCase()} +{fmt(extras.facturacion.monthly)}/mes y{" "}
-          {extras.frontera.name.toLowerCase()} +{fmt(extras.frontera.monthly)}/mes.{" "}
-          <Link href="/precios" className="text-claro underline decoration-pluma underline-offset-4 hover:decoration-2">
-            {preciosCopy.verTodo}
-          </Link>
-        </p>
+        <div data-planes className="mt-7">
+          <Carrusel
+            label="Planes"
+            desdeMd="md:grid md:grid-cols-2 md:gap-4 md:overflow-visible md:mx-0 md:px-0 md:snap-none xl:grid-cols-4"
+            items={plans.map((p) => (
+              <PlanCard key={p.id} p={p} anual={anual} />
+            ))}
+          />
+        </div>
+
+        <Desplegable label="Extras y servicios únicos" tono="claro" className="legible mt-6 max-w-[640px]">
+          <ul className="space-y-1.5 text-sm text-claro/80">
+            <li>
+              {extras.nomina.name}: desde {fmt(extras.nomina.monthly)}/mes hasta{" "}
+              {extras.nomina.includedWorkers} trabajadores.
+            </li>
+            <li>
+              {extras.facturacion.name}: +{fmt(extras.facturacion.monthly)}/mes.
+            </li>
+            <li>
+              {extras.frontera.name}: +{fmt(extras.frontera.monthly)}/mes.
+            </li>
+            <li>
+              <Link
+                href="/precios"
+                className="inline-flex min-h-11 items-center text-claro underline decoration-pluma underline-offset-4"
+              >
+                {preciosCopy.verTodo}
+              </Link>
+            </li>
+          </ul>
+        </Desplegable>
       </div>
     </section>
   );

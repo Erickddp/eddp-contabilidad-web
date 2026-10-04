@@ -177,8 +177,7 @@ export const proceso = {
 
 export const preciosCopy = {
   titulo: "Precios claros desde el primer mensaje",
-  intro:
-    "Planes mensuales con precio fijo. Si pagas el año completo tienes 10% de descuento. Los extras (nómina, facturación, estímulo fronterizo) se suman a tu plan.",
+  intro: "Precio fijo al mes. Si pagas el año completo, 10% menos.",
   destacado: "El más elegido",
   boton: "Quiero este plan",
   verTodo: "Ver precios completos y servicios únicos",
@@ -195,7 +194,7 @@ export type Caso = {
 
 export const casosCopy = {
   titulo: "Casos",
-  intro: "Expedientes reales, sin nombres. Así se ve el trabajo de todos los días.",
+  intro: "Expedientes reales, sin nombres.",
 };
 
 export const casos: Caso[] = [
@@ -242,14 +241,19 @@ export const casos: Caso[] = [
 export const tecnologiaCopy = {
   titulo: "Herramientas que construí para trabajar más rápido (y cobrarte justo).",
   texto:
-    "Estudio Inteligencia Artificial y aplico lo que aprendo a la contabilidad. Analizo cientos de facturas en segundos, concilio con sistemas propios y automatizo recordatorios. Lo repetitivo lo hace la máquina; el criterio fiscal lo pongo yo.",
+    "Estudio Inteligencia Artificial y lo aplico a la contabilidad. Lo repetitivo lo hace la máquina; el criterio fiscal lo pongo yo.",
+  enDesarrollo: "En desarrollo",
   verTodo: "Ver todos mis proyectos",
 };
 
 export const sobreMi = {
   titulo: "Sobre mí",
-  texto:
-    "Soy Erick Domínguez Del Prado, Contador Público. He llevado la contabilidad de grupos corporativos con más de quince empresas, migraciones a SAP y respuestas a requerimientos del SAT. Hoy pongo esa experiencia al servicio de personas y negocios que necesitan un contador que sí conteste. Trabajo desde el poniente de la Ciudad de México y atiendo en línea a clientes de todo el país.",
+  // Lo que se ve de entrada; el resto va en un desplegable.
+  corto:
+    "Soy Erick Domínguez Del Prado, Contador Público. Llevé la contabilidad de grupos corporativos con más de quince empresas y hoy pongo esa experiencia al servicio de personas y negocios que necesitan un contador que sí conteste.",
+  resto:
+    "Migraciones a SAP, respuestas a requerimientos del SAT y conciliaciones multiempresa. Trabajo desde el poniente de la Ciudad de México y atiendo en línea a clientes de todo el país.",
+  verMas: "Formación y experiencia",
   filas: [
     {
       concepto: "Formación",

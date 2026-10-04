@@ -63,7 +63,7 @@ export function Hero() {
         <div className="lg:col-span-6">
           <h1
             data-hero="h1"
-            className="font-display text-[clamp(2.75rem,6vw,6rem)] font-semibold leading-[0.95] tracking-[-0.035em] text-claro sm:whitespace-nowrap"
+            className="font-display text-[clamp(2.4rem,6vw,5.5rem)] font-semibold leading-[0.95] tracking-[-0.035em] text-claro sm:whitespace-nowrap"
           >
             Tus impuestos,
             <br />
@@ -71,17 +71,17 @@ export function Hero() {
           </h1>
           <p
             data-hero="sub"
-            className="mt-4 max-w-[46ch] text-base leading-[1.55] text-claro/80 md:mt-6 md:text-lg"
+            className="mt-3 max-w-[44ch] text-[15px] leading-[1.55] text-claro/80 md:mt-5 md:text-lg"
           >
             Contabilidad, declaraciones y estrategia fiscal para personas y empresas en todo
             México. Pagas lo que marca la ley, ni un peso de más.
           </p>
-          <div data-hero="cta" className="mt-6 md:mt-8">
-            <div className="flex flex-col gap-3 sm:flex-row">
+          <div data-hero="cta" className="mt-5 md:mt-8">
+            <div className="flex flex-col gap-2.5 sm:flex-row sm:gap-3">
               <Button
                 href={waLink("general")}
                 external
-                className="!h-[52px] w-full sm:w-auto"
+                className="w-full sm:w-auto"
                 onClick={() => trackWhatsapp("hero", "general")}
               >
                 Escríbeme por WhatsApp
@@ -90,13 +90,13 @@ export function Hero() {
                 href={booking.href}
                 external={booking.external}
                 variant="secundario"
-                className="!h-[52px] w-full sm:w-auto"
+                className="w-full sm:w-auto"
                 onClick={() => trackBooking("hero")}
               >
                 Agenda una llamada de 20 min
               </Button>
             </div>
-            <p className="mt-3 text-sm text-claro/72">
+            <p className="mt-3 text-[13px] text-claro/70 md:text-sm">
               Primera revisión gratis. Respondo en menos de 24 horas hábiles.
             </p>
           </div>

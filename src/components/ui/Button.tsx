@@ -5,7 +5,14 @@ import type { ReactNode } from "react";
 type Variant = "primario" | "secundario" | "papel-oscuro";
 
 const base =
-  "inline-flex h-12 md:h-[52px] items-center justify-center gap-2 rounded-boton px-6 md:px-7 text-[15px] md:text-base font-medium whitespace-nowrap transition-colors duration-150 cursor-pointer";
+  "inline-flex items-center justify-center gap-2 rounded-boton font-medium whitespace-nowrap transition-colors duration-150 cursor-pointer";
+
+const sizes = {
+  // 48 px en móvil, 52 px en desktop
+  md: "h-12 md:h-[52px] px-5 md:px-7 text-[15px] md:text-base",
+  // Botones dentro de tarjetas: 44 px
+  sm: "h-11 px-4 text-sm",
+};
 
 const variants: Record<Variant, string> = {
   // Papel sobre tinta (botón principal)
@@ -24,6 +31,7 @@ type Props = {
   className?: string;
   onClick?: () => void;
   icon?: ReactNode;
+  size?: keyof typeof sizes;
 };
 
 export function Button({
@@ -34,12 +42,13 @@ export function Button({
   className = "",
   onClick,
   icon,
+  size = "md",
 }: Props) {
   return (
     <a
       href={href}
       onClick={onClick}
-      className={`${base} ${variants[variant]} ${className}`}
+      className={`${base} ${sizes[size]} ${variants[variant]} ${className}`}
       {...(external ? { target: "_blank", rel: "noopener" } : {})}
     >
       {icon}

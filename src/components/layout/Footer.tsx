@@ -11,15 +11,15 @@ export function Footer() {
   const year = new Date().getFullYear();
   // data-forma="5": la balanza del CTA se disuelve en nube al salir, para no quedar sobre el texto.
   return (
-    <footer data-forma="5" data-inicio="top bottom" className="sobre-tinta relative z-10 bg-tinta pb-[calc(88px+env(safe-area-inset-bottom))] pt-16 text-claro md:pb-12 md:pt-20">
+    <footer data-forma="5" data-inicio="top bottom" className="sobre-tinta relative z-10 bg-tinta pb-[calc(84px+env(safe-area-inset-bottom))] pt-12 text-sm text-claro md:pb-12 md:pt-16 md:text-[15px]">
       <div className="contenedor">
-        <div className="grid gap-12 lg:grid-cols-12">
+        <div className="grid gap-8 lg:grid-cols-12 lg:gap-12">
           <div className="lg:col-span-5">
             <div className="flex items-center gap-3">
               <Image src="/brand/logo.png" alt="" width={40} height={40} className="h-10 w-10 object-contain" />
-              <span className="font-display text-xl font-semibold tracking-tight">{site.brand}</span>
+              <span className="font-display text-lg font-semibold tracking-tight">{site.brand}</span>
             </div>
-            <p className="mt-5 text-claro/72">
+            <p className="mt-4 text-claro/72">
               C.P. {site.owner}
               {site.cedula ? <>. Cédula profesional {site.cedula}.</> : null}
             </p>
@@ -27,9 +27,9 @@ export function Footer() {
             <p className="mt-1 text-claro/72">{site.hours}</p>
           </div>
 
-          <nav aria-label="Pie de página" className="grid gap-8 sm:grid-cols-3 lg:col-span-7">
+          <nav aria-label="Pie de página" className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:col-span-7">
             <div>
-              <h2 className="font-display text-base font-semibold">Servicios</h2>
+              <h2 className="font-display text-sm font-semibold md:text-base">Servicios</h2>
               <ul className="mt-2">
                 <li><Link className={link} href="/frontera">Estímulo región fronteriza</Link></li>
                 <li><Link className={link} href="/regularizacion">Regularización fiscal</Link></li>
@@ -37,14 +37,14 @@ export function Footer() {
               </ul>
             </div>
             <div>
-              <h2 className="font-display text-base font-semibold">Legal</h2>
+              <h2 className="font-display text-sm font-semibold md:text-base">Legal</h2>
               <ul className="mt-2">
                 <li><Link className={link} href="/aviso-de-privacidad">Aviso de privacidad</Link></li>
                 <li><Link className={link} href="/terminos">Términos</Link></li>
               </ul>
             </div>
             <div>
-              <h2 className="font-display text-base font-semibold">Contacto</h2>
+              <h2 className="font-display text-sm font-semibold md:text-base">Contacto</h2>
               <ul className="mt-2">
                 <li><a className={link} href={waLink("general")} target="_blank" rel="noopener">WhatsApp</a></li>
                 <li><a className={link} href={`mailto:${site.email}`}>Correo</a></li>
@@ -56,7 +56,7 @@ export function Footer() {
         </div>
 
         {/* Tercer y último uso de la doble raya: ancho completo, se dibuja una sola vez. */}
-        <DoubleRule className="mt-14 block" />
+        <DoubleRule className="mt-10 block" />
         <p className="mt-6 text-sm text-claro/72">
           © {year} {site.brand}
         </p>

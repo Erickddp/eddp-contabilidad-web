@@ -54,14 +54,19 @@ body {
   background: var(--color-noche);
   color: var(--color-claro);
   font-family: var(--font-sans);
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.55;
   font-variant-numeric: tabular-nums lining-nums;
   -webkit-font-smoothing: antialiased;
 }
+@media (min-width: 768px) {
+  body {
+    font-size: 16px;
+  }
+}
 @media (min-width: 1024px) {
   body {
-    font-size: 17.5px;
+    font-size: 17px;
   }
 }
 
@@ -175,11 +180,11 @@ html[data-menu="open"] .barra-movil {
   }
 }
 
-/* Títulos de sección: 32–36 px en móvil (CAMBIO-V2, 10), escala 1.25 hacia arriba. */
+/* Títulos de sección: 26–28 px en móvil (Rick pidió todo más chico), hasta 44 px en desktop. */
 .h2 {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: clamp(2rem, 1.6rem + 1.6vw, 3.05rem);
+  font-size: clamp(1.65rem, 1.25rem + 1.6vw, 2.75rem);
   line-height: 1.04;
   letter-spacing: -0.028em;
 }
@@ -216,4 +221,30 @@ html[data-menu="open"] .barra-movil {
 }
 .sin-barra::-webkit-scrollbar {
   display: none;
+}
+
+/* Carrusel móvil: la tarjeta enfocada crece y las vecinas se atenúan, ligado al scroll
+   horizontal (CSS scroll-driven). Sin soporte o con reduced motion, se ven normales. */
+@keyframes carrusel-foco {
+  0% {
+    scale: 0.93;
+    opacity: 0.55;
+  }
+  54% {
+    scale: 1;
+    opacity: 1;
+  }
+  100% {
+    scale: 0.93;
+    opacity: 0.55;
+  }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) and (max-width: 767px) {
+    .carrusel-item {
+      animation: carrusel-foco linear both;
+      animation-timeline: view(inline);
+      transform-origin: 50% 50%;
+    }
+  }
 }

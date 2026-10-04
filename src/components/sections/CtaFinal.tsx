@@ -23,12 +23,12 @@ export function CtaFinal() {
       <div className="contenedor">
         <h2
           data-cta-titulo
-          className="legible mx-auto max-w-[16ch] font-display text-[2.5rem] font-semibold leading-[1.0] tracking-[-0.03em] text-claro md:text-6xl lg:text-7xl"
+          className="legible mx-auto max-w-[16ch] font-display text-[2.1rem] font-semibold leading-[1.02] tracking-[-0.03em] text-claro md:text-5xl lg:text-6xl"
         >
           {ctaFinal.titulo}
         </h2>
-        <p className="legible mx-auto mt-5 max-w-[46ch] text-claro/85 md:text-lg">{ctaFinal.texto}</p>
-        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+        <p className="legible mx-auto mt-4 max-w-[42ch] text-claro/85">{ctaFinal.texto}</p>
+        <div className="mt-6 flex flex-col justify-center gap-2.5 sm:flex-row sm:gap-3">
           <Button href={waLink("general")} external onClick={() => trackWhatsapp("cta-final", "general")}>
             {ctaFinal.whatsapp}
           </Button>

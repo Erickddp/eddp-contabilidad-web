@@ -33,19 +33,7 @@ export function HomeMotion() {
         );
       });
 
-      // Servicios en móvil y tablet: deck; la tarjeta de atrás baja a escala 0.94.
-      const deck = gsap.utils.toArray<HTMLElement>("[data-deck]");
-      deck.forEach((li, i) => {
-        const next = deck[i + 1];
-        const card = li.firstElementChild;
-        if (!next || !card) return;
-        gsap.to(card, {
-          scale: 0.94,
-          transformOrigin: "50% 0%",
-          ease: "none",
-          scrollTrigger: { trigger: next, start: "top bottom", end: "top 30%", scrub: true },
-        });
-      });
+      // Servicios en móvil: carrusel; el foco de la tarjeta lo anima CSS (scroll-driven).
 
       // Comparativo: el conteo corre sincronizado con el crecimiento de las columnas
       // y el ahorro aparece al final con la doble raya.

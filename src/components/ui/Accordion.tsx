@@ -25,14 +25,14 @@ export function Accordion({ items }: { items: Item[] }) {
                 aria-expanded={isOpen}
                 aria-controls={id}
                 onClick={() => setOpen(isOpen ? null : i)}
-                className="flex min-h-16 w-full cursor-pointer items-center justify-between gap-4 py-4 text-left font-display text-lg font-medium tracking-[-0.01em] text-claro md:text-xl"
+                className="flex min-h-14 w-full cursor-pointer items-center justify-between gap-4 py-3 text-left font-display text-base font-medium tracking-[-0.01em] text-claro md:text-lg"
               >
                 {it.q}
                 <motion.span
                   aria-hidden="true"
                   animate={{ rotate: isOpen ? 45 : 0 }}
                   transition={{ duration: 0.4, ease: EASE_EXPO }}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-claro/20"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-claro/20"
                 >
                   <Plus size={18} />
                 </motion.span>
@@ -49,7 +49,7 @@ export function Accordion({ items }: { items: Item[] }) {
                   transition={{ duration: 0.5, ease: EASE_EXPO }}
                   className="overflow-hidden"
                 >
-                  <p className="max-w-[64ch] pb-5 pr-12 text-claro/80">{it.a}</p>
+                  <p className="max-w-[64ch] pb-4 pr-10 text-sm text-claro/80 md:text-[15px]">{it.a}</p>
                 </motion.div>
               )}
             </AnimatePresence>

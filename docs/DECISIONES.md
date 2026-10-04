@@ -41,3 +41,13 @@ Registro de decisiones de diseño y técnicas que no estaban especificadas en `P
 - El footer es un tramo más (`data-forma="5"`, arranca en `top bottom`): la balanza del CTA se disuelve al salir y no queda encima del título.
 - La barra de progreso de Servicios usa transform de GSAP; se quitó `scale-x-0` de Tailwind v4 porque usa la propiedad CSS `scale`, que se suma al transform y la dejaba en cero.
 - Video de scroll: Playwright graba `tests/capturas/scroll-375.webm`; para revisarlo se extraen cuadros reproduciéndolo en Chromium (el ffmpeg de Playwright solo codifica).
+
+## Ajustes pedidos por Rick (2026-10-04): menos texto, sin fondos blancos, móvil más compacto
+
+- Fuera las tarjetas de papel (blancas) en Precios y Casos: ahora son oscuras (`tinta-2`), igual que Servicios. El plan destacado se marca con borde pluma.
+- Detalle encapsulado en desplegables (`Desplegable`): entregables de cada servicio, lo que incluye cada plan después de los 3 primeros puntos, "qué se hizo" en casos, supuestos del comparativo, herramientas en desarrollo, extras y la trayectoria en "Sobre mí".
+- Móvil: Servicios, Precios y Casos pasan a carrusel deslizable con snap, barra de avance y "2 / 4". Reemplaza el deck sticky de CAMBIO-V2 porque Rick pidió acortar; la tarjeta enfocada crece con una animación CSS ligada al scroll horizontal (con reduced motion o sin soporte se ve normal).
+- Tipografía más chica (anula CAMBIO-V2, 10): h1 de 38 px en 375 (antes 44), h2 de 26 px (antes 32), cuerpo de 15 px en móvil y 17 px en desktop. Botones de 48 px en móvil (52 en desktop) y de 44 px dentro de tarjetas.
+- "¿Te pasa esto?": cada frase ocupa ~38% de la pantalla en móvil (antes una por pantalla completa).
+- "Sobre mí" en móvil: foto chica junto al título; texto corto visible y el resto en un desplegable.
+- Resultado: el home en 375 px bajó de más de 20,000 px a ~9,750 px de alto.

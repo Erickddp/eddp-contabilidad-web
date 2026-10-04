@@ -14,14 +14,14 @@ const jsonLd = {
 /** Preguntas frecuentes: sin animación de entrada, solo el acordeón. */
 export function Preguntas() {
   return (
-    <section id="preguntas" data-forma="5" data-wa="general" className="relative py-24 md:py-32">
+    <section id="preguntas" data-forma="5" data-wa="general" className="relative py-16 md:py-24">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
       <div className="contenedor lg:grid lg:grid-cols-12 lg:gap-8">
         <h2 className="h2 legible text-claro lg:col-span-4">Preguntas frecuentes</h2>
-        <div className="mt-8 lg:col-span-8 lg:mt-0">
+        <div className="mt-6 lg:col-span-8 lg:mt-0">
           <Accordion items={faq} />
         </div>
       </div>
