@@ -9,7 +9,12 @@ export default defineConfig({
   workers: 1,
   use: {
     baseURL: `http://localhost:${PORT}`,
-    launchOptions: { args: ["--enable-webgl", "--ignore-gpu-blocklist", "--use-angle=swiftshader"] },
+    // GPU=1 usa la GPU real (D3D11) para medir fps; por defecto, SwiftShader (estable en CI).
+    launchOptions: {
+      args: process.env.GPU
+        ? ["--enable-gpu", "--ignore-gpu-blocklist", "--use-angle=d3d11"]
+        : ["--enable-webgl", "--ignore-gpu-blocklist", "--use-angle=swiftshader"],
+    },
   },
   webServer: {
     command: `npm run build && npx next start -p ${PORT}`,

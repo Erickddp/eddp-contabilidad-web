@@ -10,6 +10,7 @@ import { Proceso } from "@/components/sections/Proceso";
 import { Servicios } from "@/components/sections/Servicios";
 import { SobreMi } from "@/components/sections/SobreMi";
 import { Tecnologia } from "@/components/sections/Tecnologia";
+import { HomeMotion } from "@/components/sections/HomeMotion";
 
 export default function Home() {
   return (
@@ -26,6 +27,7 @@ export default function Home() {
       <SobreMi />
       <Preguntas />
       <CtaFinal />
+      <HomeMotion />
     </>
   );
 }

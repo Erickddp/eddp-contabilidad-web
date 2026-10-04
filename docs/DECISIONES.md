@@ -30,3 +30,14 @@ Registro de decisiones de diseño y técnicas que no estaban especificadas en `P
 - Precios del home: toggle mensual/anual con el 10% de descuento aplicado al precio mensual; el link "Ver precios completos" apunta a `/precios`, que se construye en la fase 3.
 - Servicios: la tarjeta muestra "desde" tomado de `pricing.ts` (planes, extras o servicios únicos), para no duplicar precios.
 - JSON-LD `FAQPage` se adelantó al home porque es una línea de código y ya existe `faq.ts`.
+- Prueba de rendimiento móvil (`tests/fps.spec.ts`, 375 px, `isMobile`, 4,000 partículas, CPU 4× con `Emulation.setCPUThrottlingRate`), 2026-10-03:
+  - GPU real de la PC de desarrollo (Intel UHD 620, `GPU=1 npx playwright test tests/fps.spec.ts`): **42 → 52 fps** (promedios de 2 s). El primer promedio incluye el armado de formas y la entrada; luego se estabiliza arriba de 50. No llegó a activar el recorte a la mitad.
+  - SwiftShader (render por software, lo que usa Playwright por defecto): 17 → 29–33 fps; el recorte a la mitad se activa solo, como se diseñó. No es representativo de un teléfono con GPU.
+  - Pendiente: confirmar en un Android de gama media real (Chrome remoto) antes de lanzar.
+- Animaciones por sección en un solo componente (`HomeMotion`) dentro de `gsap.matchMedia`: con reduced motion no se registra ningún ScrollTrigger (sin pin, sin scrub, sin conteo) y todo queda visible.
+- El conteo del comparativo usa el panel como disparador (top 85% → +55%) y no la sección, para que el usuario vea los números mientras corren; las columnas de partículas crecen en el mismo tramo de scroll.
+- Dígitos que ruedan: cada posición (contada desde la derecha) es una columna 0–9; solo se mueven las que cambian. El ancho lo da un "0" invisible, así respeta las cifras tabulares de la fuente.
+- Fallback sin WebGL o con reduced motion: SVG de puntos generado con las mismas formas (`npm run build:balanza` → `public/media/balanza.svg`, 139 KB, `loading="lazy"`), mostrado en el hero y en el CTA final.
+- El footer es un tramo más (`data-forma="5"`, arranca en `top bottom`): la balanza del CTA se disuelve al salir y no queda encima del título.
+- La barra de progreso de Servicios usa transform de GSAP; se quitó `scale-x-0` de Tailwind v4 porque usa la propiedad CSS `scale`, que se suma al transform y la dejaba en cero.
+- Video de scroll: Playwright graba `tests/capturas/scroll-375.webm`; para revisarlo se extraen cuadros reproduciéndolo en Chromium (el ffmpeg de Playwright solo codifica).

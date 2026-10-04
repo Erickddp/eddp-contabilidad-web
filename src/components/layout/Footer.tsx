@@ -9,8 +9,9 @@ const link =
 
 export function Footer() {
   const year = new Date().getFullYear();
+  // data-forma="5": la balanza del CTA se disuelve en nube al salir, para no quedar sobre el texto.
   return (
-    <footer className="sobre-tinta relative z-10 bg-tinta pb-[calc(88px+env(safe-area-inset-bottom))] pt-16 text-claro md:pb-12 md:pt-20">
+    <footer data-forma="5" data-inicio="top bottom" className="sobre-tinta relative z-10 bg-tinta pb-[calc(88px+env(safe-area-inset-bottom))] pt-16 text-claro md:pb-12 md:pt-20">
       <div className="contenedor">
         <div className="grid gap-12 lg:grid-cols-12">
           <div className="lg:col-span-5">

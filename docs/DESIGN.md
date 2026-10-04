@@ -1,63 +1,68 @@
-# Diseño: concepto "Doble raya"
+# Diseño: "La balanza" (V2)
 
-Fuente: sección 7 y 8 de `PROMPT-MAESTRO.md`. Este documento resume los tokens reales y los wireframes.
+Fuentes: `CAMBIO-V2.md` (manda) y las secciones vigentes de `PROMPT-MAESTRO.md` (paleta, tipografía, forma, retícula, prohibidos).
 
 ## Tokens (`src/app/globals.css`, `@theme`)
 
 | Token | Valor | Rol |
 |---|---|---|
-| `tinta` | #0B1733 | Fondo base oscuro |
-| `tinta-2` | #13224A | Superficies elevadas |
-| `papel` | #EEF3EA | Secciones claras, botón principal |
-| `renglon` | #C9D8C3 | Líneas y columnas sobre papel |
-| `pluma` | #3157E0 | Foco, links, estados activos |
-| `cuadre` | #D23A2C | Solo doble raya, totales y estado "Cuadra" |
-| `ambar` | #F2A541 | Frontera: puntos del mapa y brillo del hero |
-| `claro` | #F3F5F1 | Texto sobre tinta (100% y 72%) |
+| `noche` | #070F24 | Fondo del canvas de la balanza (más profundo que tinta) |
+| `tinta` | #0B1733 | Superficies oscuras y footer |
+| `tinta-2` | #13224A | Tarjetas elevadas y halo central del fondo |
+| `papel` | #EEF3EA | Tarjetas de precios y fichas de casos; botón principal |
+| `renglon` | #C9D8C3 | Líneas sobre papel |
+| `pluma` | #3157E0 | Foco, estados activos, columna "con estrategia", brillo de partículas |
+| `cuadre` | #D23A2C | Solo la doble raya (comparativo y footer) |
+| `ambar` | #F2A541 | "Peso, impuestos de más" en las partículas |
+| `claro` | #F3F5F1 | Texto sobre fondo oscuro y partículas base |
 
-Radios: libro 4 px, vidrio 22 px, botón 12 px, FAB circular. Sombras: solo el panel del cotizador.
-Retícula: contenedor 1320 px, gutter 20 / 32 / 64 px (`--gutter`).
+Radios: libro 4 px (precios, casos), vidrio 22 px (tarjetas de servicio, panel del comparativo), botón 12 px.
 
-## Tipografía
+## Tipografía (mobile-first)
 
-Display: Bricolage Grotesque 500/600. Texto: IBM Plex Sans 400/500. Cifras con `tabular-nums lining-nums`.
-Cuerpo 16 px móvil, 17.5 px desktop, interlineado 1.55. H1: `clamp(2.5rem, 6.2vw, 5.75rem)`, interlineado 0.95.
-Escala modular 1.25 desde 1 rem: h6 1 rem · h5 1.25 · h4 1.563 · h3 1.953 · h2 2.441 rem.
+- h1: `clamp(2.75rem, 6vw, 6rem)` → 44 px en 375, hasta 96 px. Interlineado 0.95, tracking −0.035em.
+- h2 (`.h2`): `clamp(2rem, 1.6rem + 1.6vw, 3.05rem)` → 32–36 px en móvil.
+- Cuerpo: 16 px en móvil, 17.5 px en desktop, interlineado 1.55. Cifras tabulares siempre.
 
-## Wireframes
+## La balanza (canvas fijo)
+
+Un solo `THREE.Points` con `ShaderMaterial`; formas en `src/components/particles/shapes.ts`, encuadres en `config.ts`.
+
+| Sección | Forma | Encuadre móvil | Encuadre desktop |
+|---|---|---|---|
+| Hero | 0 → 6 (se equilibra) | 40% superior | mitad derecha |
+| ¿Te pasa esto? | 1 papeles | pantalla completa | pantalla completa |
+| Servicios | 2 libro | centro | centro |
+| Estrategia | 3 columnas | arriba al centro | derecha |
+| Cómo trabajamos | 4 camino (vertical) | borde derecho | derecha |
+| Precios → Preguntas | 5 nube 25% | todo | todo |
+| CTA final | 6 equilibrio | arriba del título | arriba del título |
+| Footer | 5 nube | — | — |
+
+## Wireframes (375 px primero)
 
 ```
-Nav (fija)
-[logo EDDP Servicios Contables]   ( Servicios Frontera Precios Casos Sobre mí Preguntas )   [Escríbeme]
- móvil: [logo EDDP]                                                       [☰ 44x44]
-
-Hero (fondo tinta + curvas de nivel)
- Contabilidad que cuadra,
- de la frontera
- a la Ciudad de México.
- subtítulo ......................      ┌ Pago provisional de septiembre ┐
- [Escríbeme por WhatsApp] [Agenda…]    │ filas tipo libro               │
- microcopy                             │ Total a pagar   $5,025.10      │
- [⏸ pausa]                             │ ═══════════ doble raya         │
-                                       │ [Cuadra…]      Ejemplo         │
-                                       └────────────────────────────────┘
- móvil: todo en una columna, tarjeta debajo.
-
-Footer
- logo + datos │ Servicios │ Legal │ Contacto
- ═══════════════════ doble raya ancho completo
- © año EDDP Servicios Contables
-
-Móvil: barra inferior fija  [WhatsApp] [Agendar]    Desktop: FAB WhatsApp tras el hero.
+Hero                         Estrategia                   CTA final
+┌──────────────┐             ┌──────────────┐             ┌──────────────┐
+│ EDDP     [☰] │             │ Mismo ingreso│             │   balanza    │
+│   balanza    │ 40%         │ Otra estrat. │             │  equilibrio  │
+│  ⚖ (canvas)  │             │ [chips]      │             │ Tu primera   │
+│ Tus impuestos│             │┌────────────┐│             │ revisión es  │
+│ en equilibrio│             ││ $431,800   ││             │ gratis.      │
+│ subtítulo    │             ││ $36,000    ││             │ [WhatsApp]   │
+│ [WhatsApp  ] │ 52 px       ││ $395,800   ││             │ [Agendar]    │
+│ [Agendar   ] │             ││ ══════     ││             └──────────────┘
+│ microcopy    │             │└────────────┘│
+├──────────────┤             │ [Calcula...] │
+│[WhatsApp][Ag]│ barra fija  └──────────────┘
+└──────────────┘
+Desktop: hero en 6 columnas a la izquierda y la balanza a la derecha; Servicios pineado con track horizontal.
 ```
 
-Las secciones del home (fase 2 en adelante) se wireframean cuando se construyan.
+## Revisión contra 7.6
 
-## Revisión contra 7.6 (qué se corrigió)
-
-- Eyebrows en mayúsculas sobre títulos: no se usan; el título de la tarjeta va solo.
-- Chip del hero: el prompt trae "Cuadra ✓ Presentada…" con signo pegado; se usa ícono de palomita y coma.
-- Flechas "→" en links y botones: ninguna.
-- Rojo `cuadre` en botones o decoración: ninguno; solo la doble raya y el chip de estado.
-- Fade-up genérico: el movimiento está limitado a la secuencia del hero; el resto de la página no anima.
-- Palabra del h1 en otro color o cursiva: no; el titular es de un solo color.
+- Sin eyebrows, sin flechas pegadas, sin palabra del titular en otro color.
+- Números solo en "Cómo trabajamos" (es secuencia); los servicios no se numeran.
+- Rojo solo en la doble raya. Nada de gradientes decorativos: el halo del fondo es el único degradado y sirve para que las partículas brillen.
+- Cada sección tiene su propio gesto (CAMBIO-V2, 7); no hay fade-up genérico.
+- Tarjetas no idénticas: servicios (vidrio oscuro), precios (papel, una destacada), casos (fichas que alternan ancho completo y dos columnas).

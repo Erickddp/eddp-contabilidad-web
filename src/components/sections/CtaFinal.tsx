@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { ctaFinal } from "@/content/home";
 import { trackBooking, trackWhatsapp } from "@/lib/analytics";
 import { bookingLink, waLink } from "@/lib/whatsapp";
+import { BalanzaEstatica } from "@/components/hero/BalanzaEstatica";
 
 const webhook = process.env.NEXT_PUBLIC_LEAD_WEBHOOK_URL ?? "";
 
@@ -18,6 +19,7 @@ export function CtaFinal() {
       data-wa="general"
       className="relative flex min-h-svh flex-col justify-end pb-24 pt-[44svh] text-center md:pb-32 lg:pt-[48svh]"
     >
+      <BalanzaEstatica className="absolute inset-x-[var(--gutter)] top-[12svh] h-[28svh] lg:top-[14svh] lg:h-[30svh]" />
       <div className="contenedor">
         <h2
           data-cta-titulo

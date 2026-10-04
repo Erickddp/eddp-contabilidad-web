@@ -27,8 +27,11 @@ export function ParticleCanvas() {
 
   useEffect(() => {
     const decide = () => {
-      if (prefersReducedMotion() || !hasWebGL()) setMode({ kind: "static" });
-      else setMode({ kind: "webgl", count: particleCount(), mobile: isMobileDevice() });
+      if (prefersReducedMotion() || !hasWebGL()) {
+        // Fallback: el hero y el CTA muestran la balanza estática (ver BalanzaEstatica).
+        document.documentElement.dataset.balanza = "estatica";
+        setMode({ kind: "static" });
+      } else setMode({ kind: "webgl", count: particleCount(), mobile: isMobileDevice() });
     };
     if ("requestIdleCallback" in window) {
       const id = window.requestIdleCallback(decide, { timeout: 1200 });

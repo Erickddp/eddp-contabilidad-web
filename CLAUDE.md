@@ -11,7 +11,8 @@ Sitio para vender servicios contables del C.P. Erick Domínguez Del Prado. Domin
 - `npm run dev` — servidor de desarrollo
 - `npm run build` — build de producción
 - `npm run lint` — ESLint
-- `npm run test:visual` — capturas Playwright a 375, 768 y 1440 px (se completa en la Fase 1)
+- `npm run test:visual` — Playwright: capturas a 375/768/1440, scroll con video a 375, reduced motion y fps (`GPU=1` para medir con la GPU real). Salida en `tests/capturas/`
+- `npm run build:balanza` — regenera `public/media/balanza.svg` (fallback estático)
 
 ## Mapa de carpetas
 
@@ -32,6 +33,8 @@ Sitio para vender servicios contables del C.P. Erick Domínguez Del Prado. Domin
 | Teléfono, correo, cédula, textos clave, redes, herramientas, testimonios | `src/content/site.config.ts` |
 | Precios, planes, extras, servicios únicos, reglas del cotizador | `src/content/pricing.ts` |
 | Preguntas frecuentes | `src/content/faq.ts` |
+| Textos del home (dolores, servicios, proceso, casos, sobre mí, CTA) | `src/content/home.ts` |
+| Escenarios del comparativo "Mismo ingreso. Otra estrategia." | `src/content/estrategia.ts` |
 | Ciudades fronterizas del mapa | `src/content/cities.ts` |
 | Variables (GA4, webhook, agenda) | `.env.local` (ver `.env.example`) |
 

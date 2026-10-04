@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { bookingLink, waLink } from "@/lib/whatsapp";
 import { trackBooking, trackWhatsapp } from "@/lib/analytics";
 import { prefersReducedMotion } from "@/lib/motion";
+import { BalanzaEstatica } from "./BalanzaEstatica";
 
 gsap.registerPlugin(useGSAP, SplitText);
 
@@ -57,6 +58,7 @@ export function Hero() {
 
   return (
     <section id="inicio" ref={root} data-wa="general" data-forma="0" className="relative">
+      <BalanzaEstatica className="absolute inset-x-[var(--gutter)] top-[calc(var(--nav-h)+8px)] h-[calc(40svh-var(--nav-h)-24px)] lg:inset-x-auto lg:right-[var(--gutter)] lg:top-1/2 lg:h-[60svh] lg:w-[46%] lg:-translate-y-1/2" />
       <div className="contenedor flex min-h-svh flex-col justify-end pb-[calc(96px+env(safe-area-inset-bottom))] pt-[40svh] md:pb-24 lg:grid lg:grid-cols-12 lg:items-center lg:pb-16 lg:pt-[var(--nav-h)]">
         <div className="lg:col-span-6">
           <h1

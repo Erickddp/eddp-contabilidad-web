@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { FORM_META, type LayoutName, type Stop } from "./config";
@@ -15,9 +16,11 @@ type Segment = { from: Stop; to: Stop; noise: number; st: ScrollTrigger };
  * Cada <section data-forma="N"> define un tramo: al entrar, la forma anterior es aFrom
  * y la nueva aTo; el progreso corre sobre los primeros ~60vh de la sección.
  * El hero tiene un tramo propio: el primer scroll equilibra la balanza (sin disolución).
- * `data-capa` permite cambiar el encuadre de una sección (hero, centro, derecha, cta).
+ * `data-capa` cambia el encuadre de una sección (hero, centro, derecha, borde, cta) y
+ * `data-inicio` el punto donde arranca su tramo (por defecto "top 70%").
  */
 export function ParticleScroll() {
+  const pathname = usePathname();
   useEffect(() => {
     const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-forma]"));
     const segments: Segment[] = [];
@@ -63,7 +66,7 @@ export function ParticleScroll() {
         noise: 1,
         st: ScrollTrigger.create({
           trigger: sec,
-          start: "top 70%",
+          start: sec.dataset.inicio ?? "top 70%",
           end: () => `+=${window.innerHeight * 0.6}`,
           onUpdate: recompute,
           onRefresh: recompute,
@@ -76,7 +79,7 @@ export function ParticleScroll() {
     const refresh = () => ScrollTrigger.refresh();
     document.fonts.ready.then(refresh);
     return () => segments.forEach((s) => s.st.kill());
-  }, []);
+  }, [pathname]);
 
   return null;
 }

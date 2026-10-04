@@ -66,6 +66,8 @@ export function Servicios() {
 
         {/* Desktop: track horizontal */}
         <div className="mt-12 hidden lg:block">
+          {/* Sin animación (reduced motion) el track se recorre con scroll horizontal nativo. */}
+          <div data-servicios-scroller className="sin-barra overflow-x-auto">
           <ul data-servicios-track className="flex w-max gap-6 pl-[max(var(--gutter),calc((100vw-1320px)/2+var(--gutter)))] pr-[var(--gutter)]">
             {servicios.map((s) => (
               <li key={s.nombre} className="w-[400px] shrink-0">
@@ -73,9 +75,10 @@ export function Servicios() {
               </li>
             ))}
           </ul>
+          </div>
           <div className="contenedor mt-8">
-            <div className="h-px w-full bg-claro/15">
-              <div data-servicios-barra className="h-px w-full origin-left scale-x-0 bg-pluma" />
+            <div className="h-0.5 w-full bg-claro/15">
+              <div data-servicios-barra className="h-0.5 w-full origin-left bg-pluma motion-reduce:hidden" />
             </div>
           </div>
         </div>

@@ -155,6 +155,14 @@ h4 {
   background: radial-gradient(ellipse 70% 55% at 50% 45%, #13224a 0%, var(--color-noche) 70%);
 }
 
+/* Fallback sin WebGL o con reduced motion: imagen estática de la balanza. */
+.balanza-estatica {
+  display: none;
+}
+html[data-balanza="estatica"] .balanza-estatica {
+  display: block;
+}
+
 html[data-menu="open"] .barra-movil {
   display: none;
 }
