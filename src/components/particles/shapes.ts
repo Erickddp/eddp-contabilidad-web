@@ -10,7 +10,8 @@ import { MeshSurfaceSampler } from "three/examples/jsm/math/MeshSurfaceSampler.j
 
 export type FormId = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
-export type Shape = { positions: Float32Array; colors: Float32Array };
+/** order: 0→1 por partícula; decide quién llega primero al armar la forma. */
+export type Shape = { positions: Float32Array; colors: Float32Array; order: Float32Array };
 
 const CLARO = new THREE.Color("#F3F5F1");
 const PLUMA = new THREE.Color("#3157E0");
@@ -143,6 +144,7 @@ export function balanceShape(n: number, tilt: number, palette: "peso" | "calma")
   const random = rng(palette === "peso" ? 11 : 13);
   const positions = new Float32Array(n * 3);
   const colors = new Float32Array(n * 3);
+  const order = new Float32Array(n);
   const cos = Math.cos(-tilt);
   const sin = Math.sin(-tilt);
   const end = (side: -1 | 1) =>
@@ -191,13 +193,14 @@ export function balanceShape(n: number, tilt: number, palette: "peso" | "calma")
     positions[i * 3] = px;
     positions[i * 3 + 1] = py + 0.25; // centra la balanza en el origen
     positions[i * 3 + 2] = pz;
+    order[i] = THREE.MathUtils.clamp((py + 1.7) / 3.2, 0, 1); // se arma de la base hacia arriba
 
     const heavy = part[i] === Part.Heap || part[i] === Part.PanR;
     if (palette === "peso") tint(c, random, 0.35, heavy && (part[i] === Part.Heap || random() < 0.5) ? AMBAR : undefined);
     else tint(c, random, 0.6);
     c.toArray(colors, i * 3);
   }
-  return { positions, colors };
+  return { positions, colors, order };
 }
 
 // ─── Permutación y forma completa ───────────────────────────────────────────
@@ -221,24 +224,197 @@ function permute(shape: Shape, n: number): Shape {
   const p = permutation(n);
   const positions = new Float32Array(n * 3);
   const colors = new Float32Array(n * 3);
+  const order = new Float32Array(n);
   for (let i = 0; i < n; i++) {
     const s = p[i] * 3;
     positions.set(shape.positions.subarray(s, s + 3), i * 3);
     colors.set(shape.colors.subarray(s, s + 3), i * 3);
+    order[i] = shape.order[p[i]];
   }
-  return { positions, colors };
+  return { positions, colors, order };
+}
+
+/** Ayudante: llena posiciones, colores y orden con una función por partícula. */
+function fill(
+  n: number,
+  seed: number,
+  fn: (random: () => number, pos: THREE.Vector3, color: THREE.Color, i: number) => number | void,
+): Shape {
+  const random = rng(seed);
+  const positions = new Float32Array(n * 3);
+  const colors = new Float32Array(n * 3);
+  const order = new Float32Array(n);
+  const pos = new THREE.Vector3();
+  const color = new THREE.Color();
+  for (let i = 0; i < n; i++) {
+    const o = fn(random, pos, color, i);
+    pos.toArray(positions, i * 3);
+    color.toArray(colors, i * 3);
+    order[i] = typeof o === "number" ? o : random();
+  }
+  return { positions, colors, order };
+}
+
+// 1. Papeles en caos: ~60 hojas con posición y rotación al azar.
+function papersShape(n: number): Shape {
+  const random = rng(21);
+  const SHEETS = 60;
+  const sheets = Array.from({ length: SHEETS }, () => ({
+    m: new THREE.Matrix4().compose(
+      new THREE.Vector3(
+        (random() - 0.5) * 7.6,
+        (random() - 0.5) * 5.6,
+        (random() - 0.5) * 3.5 - 0.3,
+      ),
+      new THREE.Quaternion().setFromEuler(
+        new THREE.Euler(random() * Math.PI, random() * Math.PI, random() * Math.PI),
+      ),
+      new THREE.Vector3(1, 1, 1),
+    ),
+    amber: random() < 0.18,
+  }));
+  const W = 0.42;
+  const H = 0.56;
+  return fill(n, 22, (r, pos, color, i) => {
+    const sheet = sheets[i % SHEETS];
+    const kind = r();
+    let u: number;
+    let v: number;
+    if (kind < 0.4) {
+      // Borde de la hoja
+      const t = r() * 2 * (W + H);
+      if (t < W) [u, v] = [t, 0];
+      else if (t < W + H) [u, v] = [W, t - W];
+      else if (t < 2 * W + H) [u, v] = [t - W - H, H];
+      else [u, v] = [0, t - 2 * W - H];
+    } else if (kind < 0.8) {
+      // Renglones de texto
+      const line = Math.floor(r() * 5);
+      u = 0.06 + r() * (W - 0.12) * (line === 4 ? 0.5 : 1);
+      v = H - 0.1 - line * 0.09;
+    } else [u, v] = [r() * W, r() * H];
+    pos.set(u - W / 2, v - H / 2, 0).applyMatrix4(sheet.m);
+    tint(color, r, 0.3, sheet.amber ? AMBAR : undefined);
+  });
+}
+
+// 2. Libro ordenado: hoja de cálculo en perspectiva; se arma de izquierda a derecha.
+function ledgerShape(n: number): Shape {
+  const COLS = 9;
+  const ROWS = 13;
+  const W = 6.2;
+  const H = 3.6;
+  const rot = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(-0.62, 0.18, 0.02));
+  return fill(n, 31, (r, pos, color) => {
+    const kind = r();
+    let x: number;
+    let y: number;
+    if (kind < 0.3) {
+      y = Math.floor(r() * (ROWS + 1)) / ROWS; // renglones
+      x = r();
+    } else if (kind < 0.5) {
+      x = Math.floor(r() * (COLS + 1)) / COLS; // columnas
+      y = r();
+    } else {
+      // Cifras alineadas a la derecha dentro de cada celda, como en un libro
+      const c = Math.floor(r() * COLS);
+      const row = Math.floor(r() * ROWS);
+      const len = c === 0 ? 0.75 : 0.3 + ((row * 7 + c * 3) % 5) * 0.1;
+      x = (c + 0.9 - r() * len * 0.8) / COLS;
+      y = (row + 0.5 + (r() - 0.5) * 0.18) / ROWS;
+    }
+    pos.set((x - 0.5) * W, (y - 0.5) * H, 0).applyMatrix4(rot);
+    tint(color, r, y > (ROWS - 1) / ROWS ? 0.9 : 0.35);
+    return Math.min(1, x * 0.85 + r() * 0.15);
+  });
+}
+
+// 3. Dos columnas: sin estrategia (alta, ámbar) y con estrategia (baja, pluma).
+function columnsShape(n: number, ratio: number): Shape {
+  const TALL = 3.2;
+  const low = Math.max(0.28, TALL * ratio);
+  const make = (h: number, x: number, seed: number) =>
+    sampler(new THREE.BoxGeometry(0.95, h, 0.95).translate(x, -1.6 + h / 2, 0), rng(seed));
+  const left = make(TALL, -0.75, 41);
+  const right = make(low, 0.75, 42);
+  const floor = sampler(new THREE.BoxGeometry(3, 0.01, 1.4).translate(0, -1.62, 0), rng(43));
+  const shareRight = Math.max(0.25, low / (TALL + low));
+  return fill(n, 44, (r, pos, color) => {
+    const k = r();
+    if (k < 0.08) {
+      pos.fromArray(floor.sample());
+      tint(color, r, 0.5);
+      return 0.05 * r();
+    }
+    const isRight = k < 0.08 + shareRight * 0.92;
+    pos.fromArray((isRight ? right : left).sample());
+    color.copy(CLARO).lerp(isRight ? PLUMA : AMBAR, 0.55 + r() * 0.4);
+    return Math.min(1, ((pos.y + 1.6) / TALL) * 0.9 + r() * 0.1); // crecen de abajo hacia arriba
+  });
+}
+
+// 4. Camino de 5 nodos: los pasos del proceso.
+const PATH_POINTS = [
+  new THREE.Vector3(-2.8, -0.55, 0),
+  new THREE.Vector3(-1.4, 0.45, 0.3),
+  new THREE.Vector3(0, -0.25, -0.2),
+  new THREE.Vector3(1.4, 0.55, 0.2),
+  new THREE.Vector3(2.8, -0.15, 0),
+];
+function pathShape(n: number): Shape {
+  const curve = new THREE.CatmullRomCurve3(PATH_POINTS);
+  const nodes = PATH_POINTS.map((c, k) =>
+    sampler(new THREE.SphereGeometry(0.2, 20, 14).translate(c.x, c.y, c.z), rng(51 + k)),
+  );
+  return fill(n, 52, (r, pos, color) => {
+    if (r() < 0.45) {
+      const t = r();
+      pos.copy(curve.getPointAt(t));
+      pos.x += (r() - 0.5) * 0.06;
+      pos.y += (r() - 0.5) * 0.06;
+      pos.z += (r() - 0.5) * 0.06;
+      tint(color, r, 0.6);
+      return t;
+    }
+    const k = Math.floor(r() * 5);
+    pos.fromArray(nodes[k].sample());
+    tint(color, r, 0.25);
+    return Math.min(1, k / 5 + r() * 0.1);
+  });
+}
+
+// 5. Nube tenue, lejos del centro.
+function cloudShape(n: number): Shape {
+  return fill(n, 61, (r, pos, color) => {
+    const theta = r() * Math.PI * 2;
+    const phi = Math.acos(2 * r() - 1);
+    const rad = 2.4 + Math.pow(r(), 0.7) * 2.4;
+    pos.setFromSphericalCoords(rad, phi, theta);
+    pos.z *= 0.5;
+    tint(color, r, 0.45);
+  });
 }
 
 export type ShapeOptions = { columnRatio?: number };
 
 export function buildShape(form: FormId, n: number, opts: ShapeOptions = {}): Shape {
-  void opts;
-  switch (form) {
-    case 0:
-      return permute(balanceShape(n, BALANCE_TILT, "peso"), n);
-    case 6:
-      return permute(balanceShape(n, 0, "calma"), n);
-    default:
-      return permute(balanceShape(n, 0, "calma"), n);
-  }
+  const raw = (() => {
+    switch (form) {
+      case 0:
+        return balanceShape(n, BALANCE_TILT, "peso");
+      case 1:
+        return papersShape(n);
+      case 2:
+        return ledgerShape(n);
+      case 3:
+        return columnsShape(n, opts.columnRatio ?? 0.25);
+      case 4:
+        return pathShape(n);
+      case 5:
+        return cloudShape(n);
+      case 6:
+        return balanceShape(n, 0, "calma");
+    }
+  })();
+  return permute(raw, n);
 }

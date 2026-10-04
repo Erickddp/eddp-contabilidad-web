@@ -94,13 +94,15 @@ h4 {
   outline-color: #8fa6ff;
 }
 
-/* Panel de vidrio (hero y mapa). */
-.vidrio {
-  background: rgba(11, 23, 51, 0.45);
-  border: 1px solid rgba(243, 245, 241, 0.08);
-  border-radius: var(--radius-vidrio);
-  -webkit-backdrop-filter: blur(18px);
-  backdrop-filter: blur(18px);
+/* Panel de vidrio. En la capa components para que las utilidades de Tailwind lo puedan ajustar. */
+@layer components {
+  .vidrio {
+    background: rgba(11, 23, 51, 0.45);
+    border: 1px solid rgba(243, 245, 241, 0.08);
+    border-radius: var(--radius-vidrio);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+  }
 }
 
 /* Papel columnar: 12 columnas tenues, coinciden con la retícula. */
@@ -163,4 +165,47 @@ html[data-menu="open"] .barra-movil {
   [data-hero] {
     opacity: 0;
   }
+}
+
+/* Títulos de sección: 32–36 px en móvil (CAMBIO-V2, 10), escala 1.25 hacia arriba. */
+.h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2rem, 1.6rem + 1.6vw, 3.05rem);
+  line-height: 1.04;
+  letter-spacing: -0.028em;
+}
+
+/* Texto sobre partículas: un halo del color del fondo para que siempre se lea. */
+.legible {
+  text-shadow:
+    0 0 18px rgba(7, 15, 36, 0.95),
+    0 0 4px rgba(7, 15, 36, 0.8);
+}
+
+/* Marquee de la franja de confianza (móvil). */
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee-track {
+  animation: marquee 32s linear infinite;
+}
+.marquee:active .marquee-track,
+.marquee:focus-within .marquee-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
+
+/* Chips deslizables sin barra visible. */
+.sin-barra {
+  scrollbar-width: none;
+}
+.sin-barra::-webkit-scrollbar {
+  display: none;
 }

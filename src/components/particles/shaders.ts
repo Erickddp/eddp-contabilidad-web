@@ -69,6 +69,7 @@ uniform float uPointerOn;
 attribute vec3 aFrom;
 attribute vec3 aTo;
 attribute vec4 aRandom;
+attribute float aOrder;
 attribute vec3 aColorFrom;
 attribute vec3 aColorTo;
 
@@ -78,8 +79,9 @@ varying float vAlpha;
 ${simplex}
 
 void main() {
-  // 1. Progreso escalonado por partícula.
-  float p = smoothstep(aRandom.x * 0.4, aRandom.x * 0.4 + 0.6, uProgress);
+  // 1. Progreso escalonado por partícula (azar + el orden de armado de la forma destino).
+  float o = mix(aRandom.x, aOrder, 0.75);
+  float p = smoothstep(o * 0.4, o * 0.4 + 0.6, uProgress);
   vec3 pos = mix(aFrom, aTo, p);
 
   // 2. Disolución: máxima a mitad del tramo.

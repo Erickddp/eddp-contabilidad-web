@@ -3,7 +3,7 @@ import type { FormId } from "./shapes";
 /** Dónde vive la figura en pantalla. cx/cy: centro como fracción del ancho/alto visible
  *  (0 = centro, + = derecha/arriba). w/h: fracción máxima del ancho/alto que puede ocupar. */
 export type Layout = { cx: number; cy: number; w: number; h: number; z: number };
-export type LayoutName = "hero" | "centro" | "derecha" | "cta";
+export type LayoutName = "hero" | "centro" | "derecha" | "borde" | "cta";
 export type Stop = { form: FormId; layout: LayoutName };
 
 export const LAYOUTS: Record<LayoutName, { mobile: Layout; desktop: Layout }> = {
@@ -20,6 +20,11 @@ export const LAYOUTS: Record<LayoutName, { mobile: Layout; desktop: Layout }> = 
     mobile: { cx: 0, cy: 0.2, w: 0.85, h: 0.42, z: 5.4 },
     desktop: { cx: 0.24, cy: -0.02, w: 0.4, h: 0.72, z: 5.4 },
   },
+  // Camino del proceso: en móvil, vertical y pegado al borde derecho para no tapar los pasos.
+  borde: {
+    mobile: { cx: 0.37, cy: -0.02, w: 0.2, h: 0.78, z: 5.4 },
+    desktop: { cx: 0.24, cy: -0.02, w: 0.4, h: 0.72, z: 5.4 },
+  },
   cta: {
     mobile: { cx: 0, cy: 0.25, w: 0.8, h: 0.3, z: 5.6 },
     desktop: { cx: 0, cy: 0.2, w: 0.36, h: 0.42, z: 5.6 },
@@ -29,14 +34,23 @@ export const LAYOUTS: Record<LayoutName, { mobile: Layout; desktop: Layout }> = 
 /** Por forma: tamaño natural (para escalar), opacidad, turbulencia y si gira. */
 export const FORM_META: Record<
   FormId,
-  { width: number; height: number; alpha: number; drift: number; spin: number; layout: LayoutName }
+  {
+    width: number;
+    height: number;
+    alpha: number;
+    drift: number;
+    spin: number;
+    layout: LayoutName;
+    /** En móvil la forma se gira (el camino del proceso queda vertical). */
+    mobileRotZ?: number;
+  }
 > = {
   0: { width: 4.4, height: 3.0, alpha: 1, drift: 0, spin: 1, layout: "hero" },
-  1: { width: 8, height: 6, alpha: 0.75, drift: 0.14, spin: 0, layout: "centro" },
+  1: { width: 8, height: 6, alpha: 0.6, drift: 0.14, spin: 0, layout: "centro" },
   2: { width: 6.4, height: 3.6, alpha: 0.6, drift: 0, spin: 0, layout: "centro" },
-  3: { width: 3.2, height: 3.4, alpha: 0.75, drift: 0, spin: 0, layout: "derecha" },
-  4: { width: 6.4, height: 2.4, alpha: 0.6, drift: 0, spin: 0, layout: "centro" },
-  5: { width: 9, height: 9, alpha: 0.25, drift: 0.06, spin: 0, layout: "centro" },
+  3: { width: 3.2, height: 3.4, alpha: 0.65, drift: 0, spin: 0, layout: "derecha" },
+  4: { width: 6.4, height: 2.4, alpha: 0.5, drift: 0, spin: 0, layout: "borde", mobileRotZ: Math.PI / 2 },
+  5: { width: 3.2, height: 3.2, alpha: 0.25, drift: 0.06, spin: 0, layout: "centro" },
   6: { width: 4.4, height: 3.0, alpha: 0.95, drift: 0, spin: 1, layout: "cta" },
 };
 

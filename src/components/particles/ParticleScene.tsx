@@ -8,6 +8,11 @@ import { DESKTOP_MIN, FORM_META, LAYOUTS, type Stop } from "./config";
 import { buildShape, rng, type FormId, type Shape } from "./shapes";
 import { fragmentShader, vertexShader } from "./shaders";
 import { particleState } from "./state";
+import { escenariosVisibles } from "@/content/estrategia";
+
+// Altura relativa de las columnas (forma 3): sale del primer escenario del comparativo.
+const first = escenariosVisibles[0];
+const COLUMN_RATIO = first ? first.con.isrAnual! / first.sin.isrAnual! : 0.25;
 
 type Props = { count: number; mobile: boolean };
 
@@ -51,7 +56,7 @@ function Particles({ count, mobile }: Props) {
   const shape = (form: FormId) => {
     let s = shapes.current.get(form);
     if (!s) {
-      s = buildShape(form, count);
+      s = buildShape(form, count, { columnRatio: COLUMN_RATIO });
       shapes.current.set(form, s);
     }
     return s;
@@ -70,6 +75,7 @@ function Particles({ count, mobile }: Props) {
     g.setAttribute("aColorFrom", dyn(3));
     g.setAttribute("aColorTo", dyn(3));
     g.setAttribute("aRandom", new THREE.BufferAttribute(rand, 4));
+    g.setAttribute("aOrder", dyn(1));
     return g;
   }, [count]);
 
@@ -149,6 +155,7 @@ function Particles({ count, mobile }: Props) {
         set("aTo", b.positions);
         set("aColorFrom", a.colors);
         set("aColorTo", b.colors);
+        set("aOrder", b.order);
       }
       if (prev && sameStop(st.from, prev.to)) smooth.current = 0;
       else if (prev && sameStop(st.to, prev.from)) smooth.current = 1;
@@ -177,16 +184,19 @@ function Particles({ count, mobile }: Props) {
     const place = (stop: Stop) => {
       const L = LAYOUTS[stop.layout][desktop ? "desktop" : "mobile"];
       const m = FORM_META[stop.form];
+      const rot = desktop ? 0 : (m.mobileRotZ ?? 0);
+      const [mw, mh] = rot ? [m.height, m.width] : [m.width, m.height];
       const visH = 2 * L.z * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2));
       const visW = visH * (size.width / size.height);
-      const s = Math.min((L.w * visW) / m.width, (L.h * visH) / m.height);
-      return { x: L.cx * visW, y: L.cy * visH, s, z: L.z };
+      const s = Math.min((L.w * visW) / mw, (L.h * visH) / mh);
+      return { x: L.cx * visW, y: L.cy * visH, s, z: L.z, rot };
     };
     const pf = place(st.from);
     const pt = place(st.to);
     cam.position.z = lerp(pf.z, pt.z, e);
     obj.position.set(lerp(pf.x, pt.x, e), lerp(pf.y, pt.y, e), 0);
     obj.scale.setScalar(lerp(pf.s, pt.s, e));
+    obj.rotation.z = lerp(pf.rot, pt.rot, e);
 
     // Las balanzas giran lento; las demás formas regresan de frente.
     const spin = lerp(mf.spin, mt.spin, e);

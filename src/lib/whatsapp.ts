@@ -9,7 +9,8 @@ export type WaTemplate =
   | "nomina"
   | "servicio"
   | "agendar"
-  | "cotizador";
+  | "cotizador"
+  | "estrategia";
 
 const templates: Record<WaTemplate, string> = {
   general: "Hola Erick, vengo de tu página. Quiero información sobre tus servicios contables.",
@@ -20,6 +21,8 @@ const templates: Record<WaTemplate, string> = {
   nomina: "Hola Erick, necesito llevar la nómina de mi negocio.",
   servicio: "Hola Erick, quiero información sobre: {servicio}.",
   agendar: "Hola Erick, quiero agendar una llamada. Mi horario disponible es: ",
+  estrategia:
+    "Hola Erick, quiero saber cuánto podría ahorrar con una estrategia fiscal. Mi situación es: ",
   cotizador:
     "Hola Erick, hice mi cotización en tu página:\n• Tipo: {tipo}\n• Régimen: {regimen}\n• Facturas al mes: {cfdi}\n• Trabajadores: {trabajadores}\n• Frontera: {frontera}\n• Meses sin declarar: {atrasos}\nEstimado: desde {mensual}/mes{unico}. ¿Lo revisamos?",
 };
