@@ -1,23 +1,24 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, IBM_Plex_Sans } from "next/font/google";
+import { JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { Footer } from "@/components/layout/Footer";
 import { MobileActionBar } from "@/components/layout/MobileActionBar";
 import { Nav } from "@/components/layout/Nav";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { WhatsAppFab } from "@/components/layout/WhatsAppFab";
 import { ParticleCanvas } from "@/components/particles/ParticleCanvas";
+import { Interacciones } from "@/components/layout/Interacciones";
 import { ParticleScroll } from "@/components/particles/ParticleScroll";
 import "./globals.css";
 
-const bricolage = Bricolage_Grotesque({
-  variable: "--font-bricolage",
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
-  weight: ["500", "600"],
+  weight: ["300", "400", "500", "600", "700", "800"],
   display: "swap",
 });
 
-const plex = IBM_Plex_Sans({
-  variable: "--font-plex",
+const jetbrains = JetBrains_Mono({
+  variable: "--font-jetbrains",
   subsets: ["latin"],
   weight: ["400", "500"],
   display: "swap",
@@ -33,12 +34,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#070F24",
+  themeColor: "#000000",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es-MX" className={`${bricolage.variable} ${plex.variable}`}>
+    <html lang="es-MX" className={`${jakarta.variable} ${jetbrains.variable}`}>
       <head>
         <noscript>
           <style>{"[data-hero]{opacity:1!important}"}</style>
@@ -49,6 +50,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           Saltar al contenido
         </a>
         <ParticleCanvas />
+        <div className="grano" aria-hidden="true" />
         <Nav />
         <main id="contenido" className="relative z-10 flex-1">
           {children}
@@ -57,6 +59,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <MobileActionBar />
         <WhatsAppFab />
         <SmoothScroll />
+        <Interacciones />
         <ParticleScroll />
       </body>
     </html>

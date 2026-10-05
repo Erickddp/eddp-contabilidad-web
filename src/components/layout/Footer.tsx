@@ -5,13 +5,13 @@ import { waLink } from "@/lib/whatsapp";
 import { site } from "@/content/site.config";
 
 const link =
-  "inline-flex min-h-11 items-center text-claro/72 transition-colors duration-150 hover:text-claro";
+  "inline-flex min-h-11 items-center text-blanco/72 transition-colors duration-150 hover:text-blanco";
 
 export function Footer() {
   const year = new Date().getFullYear();
   // data-forma="5": la balanza del CTA se disuelve en nube al salir, para no quedar sobre el texto.
   return (
-    <footer data-forma="5" data-inicio="top bottom" className="sobre-tinta relative z-10 bg-tinta pb-[calc(84px+env(safe-area-inset-bottom))] pt-12 text-sm text-claro md:pb-12 md:pt-16 md:text-[15px]">
+    <footer data-forma="5" data-inicio="top bottom" className="oscuro relative z-10 border-t border-blanco/10 bg-grafito pb-[calc(84px+env(safe-area-inset-bottom))] pt-12 text-sm text-blanco md:pb-12 md:pt-16 md:text-[15px]">
       <div className="contenedor">
         <div className="grid gap-8 lg:grid-cols-12 lg:gap-12">
           <div className="lg:col-span-5">
@@ -19,12 +19,12 @@ export function Footer() {
               <Image src="/brand/logo.png" alt="" width={40} height={40} className="h-10 w-10 object-contain" />
               <span className="font-display text-lg font-semibold tracking-tight">{site.brand}</span>
             </div>
-            <p className="mt-4 text-claro/72">
+            <p className="mt-4 text-blanco/72">
               C.P. {site.owner}
               {site.cedula ? <>. Cédula profesional {site.cedula}.</> : null}
             </p>
-            <p className="mt-1 text-claro/72">{site.locality}</p>
-            <p className="mt-1 text-claro/72">{site.hours}</p>
+            <p className="mt-1 text-blanco/72">{site.locality}</p>
+            <p className="mt-1 text-blanco/72">{site.hours}</p>
           </div>
 
           <nav aria-label="Pie de página" className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:col-span-7">
@@ -56,8 +56,8 @@ export function Footer() {
         </div>
 
         {/* Tercer y último uso de la doble raya: ancho completo, se dibuja una sola vez. */}
-        <DoubleRule className="mt-10 block" />
-        <p className="mt-6 text-sm text-claro/72">
+        <DoubleRule className="mt-10 block drop-shadow-[0_0_6px_rgba(56,189,248,0.8)]" />
+        <p className="mt-6 text-sm text-blanco/72">
           © {year} {site.brand}
         </p>
       </div>

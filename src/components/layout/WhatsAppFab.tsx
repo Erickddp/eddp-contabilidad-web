@@ -53,7 +53,7 @@ export function WhatsAppFab() {
       aria-label="Escribir por WhatsApp"
       tabIndex={visible ? 0 : -1}
       onClick={() => trackWhatsapp("fab", template)}
-      className={`fixed bottom-6 right-6 z-40 hidden h-14 w-14 items-center justify-center rounded-full border border-claro/20 bg-[#1d4d3b] text-claro transition-all duration-500 ease-[var(--ease-expo)] hover:bg-[#256349] md:flex ${
+      className={`fixed bottom-6 right-6 z-40 hidden h-14 w-14 items-center justify-center rounded-full border border-blanco/20 bg-[#1d4d3b] text-blanco transition-all duration-500 ease-[var(--ease-expo)] hover:bg-[#256349] md:flex ${
         visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
       }`}
     >

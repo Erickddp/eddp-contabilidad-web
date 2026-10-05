@@ -1,25 +1,48 @@
-import { test } from "@playwright/test";
+import { test, type Page } from "@playwright/test";
 
-// Mide fps del canvas móvil (4,000 partículas) con CPU 4× más lenta (throttling de Chrome).
-// Ojo: Playwright headless renderiza WebGL por software (SwiftShader), así que el número
-// es pesimista frente a un teléfono con GPU. Ver docs/DECISIONES.md.
-test.use({ viewport: { width: 375, height: 812 }, hasTouch: true, isMobile: true });
+// Mide fps del canvas en régimen estable: espera a que el canvas reporte, deja pasar el
+// arranque (compilación de shaders, formas) y luego lee mientras hace scroll.
+// Ojo: sin GPU=1, Playwright renderiza WebGL por software (SwiftShader) y el número es pesimista.
+// Ver docs/DECISIONES.md.
+type W = { __particlesFps?: number };
 
-test("fps móvil con CPU 4x", async ({ page }) => {
-  const cdp = await page.context().newCDPSession(page);
-  await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
-  await page.goto("/");
-  const lecturas: number[] = [];
-  for (let i = 0; i < 6; i++) {
-    await page.waitForTimeout(2500);
-    await page.evaluate((y) => window.scrollTo(0, y), i * 500);
-    const fps = await page.evaluate(() => (window as unknown as { __particlesFps?: number }).__particlesFps);
-    if (fps) lecturas.push(Math.round(fps));
-  }
-  const info = await page.evaluate(() => {
-    const gl = document.querySelector("canvas")?.getContext("webgl2");
-    const ext = gl?.getExtension("WEBGL_debug_renderer_info");
-    return ext && gl ? String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : "desconocido";
+async function medir(page: Page, paso: number) {
+  await page.waitForFunction(() => (window as unknown as W).__particlesFps !== undefined, null, {
+    timeout: 90_000,
   });
-  console.log(`FPS (CPU 4x): ${lecturas.join(", ")} | renderer: ${info}`);
+  await page.waitForTimeout(6000);
+  const lecturas: number[] = [];
+  for (let i = 1; i <= 5; i++) {
+    await page.evaluate((y) => window.scrollTo(0, y), i * paso);
+    await page.waitForTimeout(2200);
+    lecturas.push(Math.round((await page.evaluate(() => (window as unknown as W).__particlesFps)) ?? 0));
+  }
+  return lecturas;
+}
+
+test.describe("móvil", () => {
+  test.use({ viewport: { width: 375, height: 812 }, hasTouch: true, isMobile: true });
+  test("fps móvil con CPU 4x", async ({ page }) => {
+    test.setTimeout(180_000);
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+    await page.goto("/");
+    const l = await medir(page, 500);
+    const info = await page.evaluate(() => {
+      const gl = document.querySelector("canvas")?.getContext("webgl2");
+      const ext = gl?.getExtension("WEBGL_debug_renderer_info");
+      return ext && gl ? String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : "desconocido";
+    });
+    console.log(`FPS móvil (CPU 4x): ${l.join(", ")} | renderer: ${info}`);
+  });
+});
+
+test.describe("desktop", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+  test("fps desktop", async ({ page }) => {
+    test.setTimeout(180_000);
+    await page.goto("/");
+    const l = await medir(page, 700);
+    console.log(`FPS desktop: ${l.join(", ")}`);
+  });
 });

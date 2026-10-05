@@ -29,8 +29,8 @@ export function Desplegable({ label, children, className = "", tono = "suave" }:
         aria-expanded={open}
         aria-controls={id}
         onClick={() => setOpen((v) => !v)}
-        className={`flex min-h-11 w-full cursor-pointer items-center justify-between gap-3 border-t border-claro/10 text-left text-sm font-medium transition-colors duration-150 hover:text-claro ${
-          tono === "claro" ? "text-claro" : "text-claro/75"
+        className={`flex min-h-11 w-full cursor-pointer items-center justify-between gap-3 border-t border-blanco/10 text-left text-sm font-medium transition-colors duration-150 hover:text-blanco ${
+          tono === "claro" ? "text-blanco" : "text-blanco/75"
         }`}
       >
         {label}
@@ -38,7 +38,7 @@ export function Desplegable({ label, children, className = "", tono = "suave" }:
           aria-hidden="true"
           animate={{ rotate: open ? 180 : 0 }}
           transition={{ duration: 0.4, ease: EASE_EXPO }}
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-claro/15"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-blanco/15"
         >
           <ChevronDown size={15} />
         </motion.span>

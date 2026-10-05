@@ -1,22 +1,26 @@
 @import "tailwindcss";
 
+/* Sistema de diseño alineado con erickddp.com (EDDP-MAIN): negro puro, grises zinc,
+   azul cielo como acento con brillo, Plus Jakarta Sans + JetBrains Mono. */
 @theme {
-  --color-tinta: #0b1733;
-  --color-tinta-2: #13224a;
-  --color-papel: #eef3ea;
-  --color-renglon: #c9d8c3;
-  --color-pluma: #3157e0;
-  --color-cuadre: #d23a2c;
+  --color-negro: #000000;
+  --color-grafito: #09090b;
+  --color-grafito-2: #18181b;
+  --color-grafito-3: #27272a;
+  --color-blanco: #ffffff;
+  --color-cielo: #38bdf8;
+  --color-cielo-300: #7dd3fc;
+  --color-cielo-500: #0ea5e9;
+  --color-cielo-700: #0369a1;
   --color-ambar: #f2a541;
-  --color-claro: #f3f5f1;
-  --color-noche: #070f24; /* fondo del canvas de la balanza */
 
-  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-plex), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
 
-  --radius-libro: 4px;
-  --radius-vidrio: 22px;
-  --radius-boton: 12px;
+  --radius-libro: 12px;
+  --radius-vidrio: 18px;
+  --radius-boton: 9999px;
 
   --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -25,7 +29,8 @@
 
 :root {
   --gutter: 20px;
-  --nav-h: 72px;
+  --nav-h: 68px;
+  --glow: rgba(56, 189, 248, 0.5);
 }
 @media (min-width: 768px) {
   :root {
@@ -35,11 +40,12 @@
 @media (min-width: 1024px) {
   :root {
     --gutter: 64px;
+    --nav-h: 72px;
   }
 }
 
 html {
-  background: var(--color-noche);
+  background: var(--color-negro);
   scroll-behavior: auto;
 }
 html.lenis,
@@ -51,11 +57,11 @@ html.lenis body {
 }
 
 body {
-  background: var(--color-noche);
-  color: var(--color-claro);
+  background: var(--color-negro);
+  color: var(--color-blanco);
   font-family: var(--font-sans);
   font-size: 15px;
-  line-height: 1.55;
+  line-height: 1.6;
   font-variant-numeric: tabular-nums lining-nums;
   -webkit-font-smoothing: antialiased;
 }
@@ -75,8 +81,13 @@ h2,
 h3,
 h4 {
   font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+::selection {
+  background: rgba(56, 189, 248, 0.35);
+  color: #fff;
 }
 
 .cifras {
@@ -85,79 +96,202 @@ h4 {
 
 .contenedor {
   width: 100%;
-  max-width: 1320px;
+  max-width: 1240px;
   margin-inline: auto;
   padding-inline: var(--gutter);
 }
 
-/* Foco visible: 2 px pluma, offset 3 px. */
 :focus-visible {
-  outline: 2px solid var(--color-pluma);
+  outline: 2px solid var(--color-cielo);
   outline-offset: 3px;
 }
-.sobre-tinta :focus-visible {
-  outline-color: #8fa6ff;
-}
 
-/* Panel de vidrio. En la capa components para que las utilidades de Tailwind lo puedan ajustar. */
+/* ── Superficies ─────────────────────────────────────────────────────────── */
+
 @layer components {
+  /* Vidrio zinc, como .glass-card de erickddp.com */
   .vidrio {
-    background: rgba(11, 23, 51, 0.45);
-    border: 1px solid rgba(243, 245, 241, 0.08);
+    background: rgba(24, 24, 27, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--radius-vidrio);
-    -webkit-backdrop-filter: blur(18px);
-    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
+
+  /* Tarjeta: el fondo del elemento hace de borde de 1 px y el fondo real va en ::after
+     (inset 1px). Así el borde vivo puede girar DETRÁS sin máscaras: solo transform, que
+     resuelve el compositor sin repintar. Sin backdrop-filter a propósito: encima de un
+     canvas que cambia en cada cuadro, el desenfoque se recalcula siempre. */
+  .tarjeta {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border-radius: var(--radius-vidrio);
+    background: rgba(255, 255, 255, 0.09);
+    --foco: 0;
+  }
+  .tarjeta::after {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    z-index: -1;
+    border-radius: calc(var(--radius-vidrio) - 1px);
+    background:
+      radial-gradient(
+        320px circle at var(--mx, 50%) var(--my, -20%),
+        rgba(56, 189, 248, calc(0.14 * var(--foco))),
+        transparent 60%
+      ),
+      linear-gradient(180deg, #151518, #09090b);
+    pointer-events: none;
   }
 }
 
-/* Papel columnar: 12 columnas tenues, coinciden con la retícula. */
-.papel-columnar {
-  background-color: var(--color-papel);
-  color: var(--color-tinta);
-  background-image: linear-gradient(
-    to right,
-    color-mix(in srgb, var(--color-renglon) 35%, transparent) 1px,
-    transparent 1px
-  );
-  background-size: calc((100% - 2 * var(--gutter)) / 12) 100%;
-  background-position: var(--gutter) 0;
+/* Foco (desktop): el halo del fondo sigue al cursor (--mx/--my los pone Interacciones). */
+.foco:hover {
+  --foco: 1;
 }
 
-.texto-2 {
-  opacity: 0.72;
+/* Borde vivo: luz cónica que gira alrededor de la tarjeta (firma de erickddp.com).
+   Es un cuadrado grande detrás del fondo; solo asoma por el borde de 1 px. */
+@keyframes girar-borde {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
 }
-
-.salto-seguro {
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-.skip-link {
+.borde-vivo::before {
+  content: "";
   position: absolute;
-  left: 12px;
-  top: -64px;
-  z-index: 100;
-  background: var(--color-papel);
-  color: var(--color-tinta);
-  padding: 12px 16px;
-  border-radius: var(--radius-boton);
-  font-weight: 500;
+  left: 50%;
+  top: 50%;
+  z-index: -2;
+  width: calc(150% + 600px);
+  aspect-ratio: 1;
+  background: conic-gradient(transparent 0 58%, rgba(56, 189, 248, 0.9) 80%, transparent 100%);
+  transform: translate(-50%, -50%);
+  animation: girar-borde 6s linear infinite;
+  animation-play-state: paused;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  display: none;
 }
-.skip-link:focus {
-  top: 12px;
+/* Solo existe y gira con hover, en la tarjeta activa o en la enfocada del carrusel. */
+.borde-vivo:hover::before,
+.borde-vivo.activo::before,
+.carrusel-activo > .borde-vivo::before {
+  display: block;
+  opacity: 1;
+}
+.borde-vivo[data-vista]:hover::before,
+.borde-vivo.activo[data-vista]::before,
+.carrusel-activo > .borde-vivo[data-vista]::before {
+  animation-play-state: running;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+/* ── Tipografía ──────────────────────────────────────────────────────────── */
+
+/* Títulos de sección: 26–28 px en móvil, hasta 46 px en desktop. */
+.h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.65rem, 1.2rem + 1.8vw, 2.9rem);
+  line-height: 1.06;
+  letter-spacing: -0.032em;
+}
+
+/* Etiqueta mono sobre cada título (como .hero-label / brand-sigla de erickddp.com). */
+.etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+.etiqueta::before {
+  content: "";
+  width: 1.6em;
+  height: 1px;
+  background: var(--color-cielo);
+  box-shadow: 0 0 8px var(--glow);
+}
+
+/* Brillo metálico que recorre el texto (metallicShine de erickddp.com). */
+.brillo-metal {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.85) 0%,
+    #94a3b8 20%,
+    #38bdf8 50%,
+    #94a3b8 80%,
+    rgba(255, 255, 255, 0.85) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: brillo-metal 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation-play-state: paused;
+}
+.brillo-metal[data-vista] {
+  animation-play-state: running;
+}
+@media (pointer: coarse) {
+  .brillo-metal {
+    animation-iteration-count: 2;
+  }
+}
+@keyframes brillo-metal {
+  to {
+    background-position: 200% center;
   }
 }
 
-/* Fondo fijo de la balanza: más profundo que tinta, con un halo tinta-2 al centro. */
+.texto-cielo {
+  color: var(--color-cielo);
+  text-shadow: 0 0 18px rgba(56, 189, 248, 0.35);
+}
+
+/* Texto sobre partículas: halo negro para que siempre se lea. */
+.legible {
+  text-shadow:
+    0 0 18px rgba(0, 0, 0, 0.95),
+    0 0 4px rgba(0, 0, 0, 0.85);
+}
+
+/* ── Fondo y textura ─────────────────────────────────────────────────────── */
+
+/* Fondo fijo de la balanza: negro con un halo cielo muy tenue al centro. */
 .fondo-balanza {
-  background: radial-gradient(ellipse 70% 55% at 50% 45%, #13224a 0%, var(--color-noche) 70%);
+  background:
+    radial-gradient(ellipse 60% 45% at 50% 38%, rgba(56, 189, 248, 0.09) 0%, transparent 70%),
+    radial-gradient(ellipse 90% 60% at 50% 110%, rgba(3, 105, 161, 0.12) 0%, transparent 70%),
+    var(--color-negro);
+}
+
+/* Grano de película muy sutil encima de todo: le quita lo "plano" al negro. */
+.grano {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  opacity: 0.045;
+  display: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* El grano solo en desktop: en el teléfono es una capa más a componer en cada cuadro. */
+@media (pointer: fine) {
+  .grano {
+    display: block;
+  }
 }
 
 /* Fallback sin WebGL o con reduced motion: imagen estática de la balanza. */
@@ -172,28 +306,86 @@ html[data-menu="open"] .barra-movil {
   display: none;
 }
 
-/* Hero: estado inicial de la secuencia de entrada (la anima GSAP; ver Hero.tsx).
-   Con reduced motion no se oculta nada. Sin JS, el <noscript> del layout lo revierte. */
+/* Hero: estado inicial de la secuencia de entrada (la anima GSAP; ver Hero.tsx). */
 @media (prefers-reduced-motion: no-preference) {
   [data-hero] {
     opacity: 0;
   }
 }
 
-/* Títulos de sección: 26–28 px en móvil (Rick pidió todo más chico), hasta 44 px en desktop. */
-.h2 {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(1.65rem, 1.25rem + 1.6vw, 2.75rem);
-  line-height: 1.04;
-  letter-spacing: -0.028em;
+/* Indicador de scroll: tres chevrones que bajan (como en erickddp.com). */
+.chevrones span {
+  display: block;
+  width: 12px;
+  height: 12px;
+  margin: -4px auto 0;
+  border-right: 1.5px solid var(--color-cielo);
+  border-bottom: 1.5px solid var(--color-cielo);
+  transform: rotate(45deg);
+  opacity: 0;
+  animation: chevron 2s infinite;
+}
+.chevrones span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.chevrones span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+@keyframes chevron {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px) rotate(45deg);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(6px) rotate(45deg);
+  }
 }
 
-/* Texto sobre partículas: un halo del color del fondo para que siempre se lea. */
-.legible {
-  text-shadow:
-    0 0 18px rgba(7, 15, 36, 0.95),
-    0 0 4px rgba(7, 15, 36, 0.8);
+/* Botón principal: pulso de luz (btn-pulse de erickddp.com). */
+@keyframes pulso-cielo {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  70%,
+  100% {
+    transform: scale(1.12, 1.35);
+    opacity: 0;
+  }
+}
+.pulso {
+  position: relative;
+}
+.pulso::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid var(--color-cielo);
+  pointer-events: none;
+  animation: pulso-cielo 2.4s ease-out infinite;
+  will-change: transform, opacity;
+}
+
+/* ── Utilidades ──────────────────────────────────────────────────────────── */
+
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -64px;
+  z-index: 100;
+  background: var(--color-cielo);
+  color: #000;
+  padding: 12px 16px;
+  border-radius: 9999px;
+  font-weight: 600;
+}
+.skip-link:focus {
+  top: 12px;
 }
 
 /* Marquee de la franja de confianza (móvil). */
@@ -209,11 +401,6 @@ html[data-menu="open"] .barra-movil {
 .marquee:focus-within .marquee-track {
   animation-play-state: paused;
 }
-@media (prefers-reduced-motion: reduce) {
-  .marquee-track {
-    animation: none;
-  }
-}
 
 /* Chips deslizables sin barra visible. */
 .sin-barra {
@@ -223,20 +410,19 @@ html[data-menu="open"] .barra-movil {
   display: none;
 }
 
-/* Carrusel móvil: la tarjeta enfocada crece y las vecinas se atenúan, ligado al scroll
-   horizontal (CSS scroll-driven). Sin soporte o con reduced motion, se ven normales. */
+/* Carrusel móvil: la tarjeta enfocada crece y las vecinas se atenúan (CSS scroll-driven). */
 @keyframes carrusel-foco {
   0% {
-    scale: 0.93;
-    opacity: 0.55;
+    scale: 0.92;
+    opacity: 0.45;
   }
   54% {
     scale: 1;
     opacity: 1;
   }
   100% {
-    scale: 0.93;
-    opacity: 0.55;
+    scale: 0.92;
+    opacity: 0.45;
   }
 }
 @supports (animation-timeline: view()) {
@@ -246,5 +432,18 @@ html[data-menu="open"] .barra-movil {
       animation-timeline: view(inline);
       transform-origin: 50% 50%;
     }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .marquee-track {
+    animation: none;
   }
 }

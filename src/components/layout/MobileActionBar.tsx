@@ -11,7 +11,7 @@ export function MobileActionBar() {
   const booking = bookingLink();
   return (
     <div
-      className="barra-movil sobre-tinta fixed inset-x-0 bottom-0 z-40 border-t border-claro/10 bg-tinta/95 px-[var(--gutter)] pt-3 backdrop-blur-md md:hidden"
+      className="barra-movil oscuro fixed inset-x-0 bottom-0 z-40 border-t border-blanco/10 bg-negro/92 px-[var(--gutter)] pt-3 md:hidden"
       style={{ paddingBottom: "calc(12px + env(safe-area-inset-bottom))" }}
     >
       <div className="grid grid-cols-2 gap-3">

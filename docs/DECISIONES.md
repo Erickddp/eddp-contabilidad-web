@@ -51,3 +51,21 @@ Registro de decisiones de diseño y técnicas que no estaban especificadas en `P
 - "¿Te pasa esto?": cada frase ocupa ~38% de la pantalla en móvil (antes una por pantalla completa).
 - "Sobre mí" en móvil: foto chica junto al título; texto corto visible y el resto en un desplegable.
 - Resultado: el home en 375 px bajó de más de 20,000 px a ~9,750 px de alto.
+
+## Rediseño con la identidad de erickddp.com (2026-10-05, pedido de Rick)
+
+Rick pidió el mismo diseño que su web (repo `Erickddp/EDDP-MAIN`) aplicado a la balanza, con más efectos y enfoque móvil. Esto **anula la paleta y varias prohibiciones de 7.2, 7.3 y 7.6 del maestro**:
+- Paleta: negro puro, grises zinc (#09090B, #18181B), acento cielo #38BDF8 con brillo; ámbar solo para el "peso de más" en las partículas. Tokens renombrados: `negro`, `grafito`, `grafito-2`, `blanco`, `cielo`. La doble raya pasa a cielo con brillo (ya no rojo).
+- Tipografía: Plus Jakarta Sans (300–800) y JetBrains Mono para etiquetas; titular en extrabold.
+- Se permiten (son firma de su web): etiqueta mono sobre cada título con efecto scramble, una parte del titular con brillo metálico animado, botones píldora con brillo y pulso, chevrones de scroll.
+- Tarjetas: grafito casi opaco con borde de 1 px; "borde vivo" (luz cónica que gira) en la tarjeta activa, la enfocada del carrusel y al pasar el mouse; foco de luz que sigue al cursor e inclinación 3D en desktop.
+- Fotos de Rick tomadas de su repo: `portada.png` en "Sobre mí" (con parallax y apertura con clip-path).
+- Balanza: red de líneas entre partículas vecinas (como la "network" de su web), pulso de datos que recorre la forma, dispersión según la velocidad del scroll, onda expansiva al tocar o hacer clic, entrada en remolino, parallax de cámara, halo de brillo (solo desktop, sobre el 30% de las partículas).
+
+Rendimiento (lo que se aprendió midiendo):
+- Animar un `@property` en un pseudo-elemento con máscara (el borde cónico de su web) repinta en cada cuadro y le quitaba ~40% de fps al canvas en móvil. Se rehízo con un cuadrado cónico que gira con `transform` detrás del fondo de la tarjeta: lo resuelve el compositor.
+- Sin `backdrop-filter` en tarjetas: sobre un canvas que cambia en cada cuadro, el desenfoque se recalcula siempre. Solo la nav en desktop lo usa.
+- `.borde-vivo` y `.brillo-metal` solo animan con `data-vista` (en pantalla). En táctil el brillo del titular da 2 pasadas y se detiene. El pulso del botón es un anillo con transform/opacity. El grano de película solo en desktop.
+- La posición de scroll se lee en un listener pasivo, no dentro del cuadro (evita layout forzado tras los cambios de estilo de GSAP).
+- Formas y redes se precalculan en tiempo ocioso después de la entrada.
+- `tests/fps.spec.ts` ahora mide en régimen estable (espera al canvas y deja pasar el arranque). Comparación justa, 10 lecturas cada una, móvil 375 px, CPU 4×, GPU real (Intel UHD 620): **versión anterior ≈ 49 fps, rediseño ≈ 44 fps** (rango 35–55). Desktop 1440 px: 54–60 fps. Si cae de 40, se reduce a la mitad de partículas y se apaga el halo.

@@ -2,6 +2,7 @@ import { test } from "@playwright/test";
 
 // Cuadros de scroll a 1440 px (la captura de página completa no sirve con el canvas fijo).
 test.use({ viewport: { width: 1440, height: 900 } });
+test.setTimeout(300_000);
 
 test("scroll a 1440px", async ({ page }) => {
   await page.goto("/");

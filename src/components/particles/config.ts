@@ -43,15 +43,28 @@ export const FORM_META: Record<
     layout: LayoutName;
     /** En móvil la forma se gira (el camino del proceso queda vertical). */
     mobileRotZ?: number;
+    /** Red de líneas: opacidad y radio de vecindad (en unidades de la forma). */
+    lineAlpha: number;
+    lineRadius: number;
   }
 > = {
-  0: { width: 4.4, height: 3.0, alpha: 1, drift: 0, spin: 1, layout: "hero" },
-  1: { width: 8, height: 6, alpha: 0.6, drift: 0.14, spin: 0, layout: "centro" },
-  2: { width: 6.4, height: 3.6, alpha: 0.6, drift: 0, spin: 0, layout: "centro" },
-  3: { width: 3.2, height: 3.4, alpha: 0.65, drift: 0, spin: 0, layout: "derecha" },
-  4: { width: 6.4, height: 2.4, alpha: 0.5, drift: 0, spin: 0, layout: "borde", mobileRotZ: Math.PI / 2 },
-  5: { width: 3.2, height: 3.2, alpha: 0.25, drift: 0.06, spin: 0, layout: "centro" },
-  6: { width: 4.4, height: 3.0, alpha: 0.95, drift: 0, spin: 1, layout: "cta" },
+  0: { width: 4.4, height: 3.0, alpha: 1, drift: 0, spin: 1, layout: "hero", lineAlpha: 0.16, lineRadius: 0.22 },
+  1: { width: 8, height: 6, alpha: 0.6, drift: 0.14, spin: 0, layout: "centro", lineAlpha: 0.1, lineRadius: 0.2 },
+  2: { width: 6.4, height: 3.6, alpha: 0.6, drift: 0, spin: 0, layout: "centro", lineAlpha: 0.14, lineRadius: 0.3 },
+  3: { width: 3.2, height: 3.4, alpha: 0.65, drift: 0, spin: 0, layout: "derecha", lineAlpha: 0.12, lineRadius: 0.28 },
+  4: {
+    width: 6.4,
+    height: 2.4,
+    alpha: 0.5,
+    drift: 0,
+    spin: 0,
+    layout: "borde",
+    mobileRotZ: Math.PI / 2,
+    lineAlpha: 0.18,
+    lineRadius: 0.25,
+  },
+  5: { width: 3.2, height: 3.2, alpha: 0.3, drift: 0.06, spin: 0, layout: "centro", lineAlpha: 0.22, lineRadius: 0.85 },
+  6: { width: 4.4, height: 3.0, alpha: 0.95, drift: 0, spin: 1, layout: "cta", lineAlpha: 0.2, lineRadius: 0.22 },
 };
 
 export const DESKTOP_MIN = 1024;

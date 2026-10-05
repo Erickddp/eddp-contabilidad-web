@@ -2,10 +2,10 @@
 
 import type { ReactNode } from "react";
 
-type Variant = "primario" | "secundario" | "papel-oscuro";
+type Variant = "primario" | "secundario" | "fantasma";
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-boton font-medium whitespace-nowrap transition-colors duration-150 cursor-pointer";
+  "inline-flex items-center justify-center gap-2 rounded-full font-semibold whitespace-nowrap transition-all duration-300 ease-[var(--ease-expo)] cursor-pointer active:scale-[0.98]";
 
 const sizes = {
   // 48 px en móvil, 52 px en desktop
@@ -15,12 +15,14 @@ const sizes = {
 };
 
 const variants: Record<Variant, string> = {
-  // Papel sobre tinta (botón principal)
-  primario: "bg-papel text-tinta hover:bg-white",
-  // Borde de 1 px con texto claro
-  secundario: "border border-claro/40 text-claro hover:bg-claro/10",
-  // Para fondos de papel
-  "papel-oscuro": "bg-tinta text-claro hover:bg-tinta-2",
+  // Cielo con texto negro y brillo al pasar (btn-primary + btn-glow de erickddp.com)
+  primario:
+    "bg-cielo text-black shadow-[0_0_18px_rgba(56,189,248,0.35)] hover:bg-cielo-300 hover:shadow-[0_0_28px_rgba(56,189,248,0.55)]",
+  // Contorno cielo (btn-outline)
+  secundario:
+    "border border-cielo/60 text-cielo-300 hover:border-cielo hover:bg-cielo/10 hover:shadow-[0_0_18px_rgba(56,189,248,0.2)]",
+  // Discreto: borde blanco tenue
+  fantasma: "border border-blanco/15 text-blanco/90 hover:border-blanco/30 hover:bg-blanco/5",
 };
 
 type Props = {

@@ -1,5 +1,6 @@
 import { Accordion } from "@/components/ui/Accordion";
 import { faq } from "@/content/faq";
+import { Etiqueta } from "@/components/ui/Etiqueta";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -20,7 +21,10 @@ export function Preguntas() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
       <div className="contenedor lg:grid lg:grid-cols-12 lg:gap-8">
-        <h2 className="h2 legible text-claro lg:col-span-4">Preguntas frecuentes</h2>
+        <div className="lg:col-span-4">
+          <Etiqueta>Preguntas</Etiqueta>
+          <h2 className="h2 legible mt-3 text-blanco">Preguntas frecuentes</h2>
+        </div>
         <div className="mt-6 lg:col-span-8 lg:mt-0">
           <Accordion items={faq} />
         </div>

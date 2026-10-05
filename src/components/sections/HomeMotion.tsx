@@ -88,11 +88,11 @@ export function HomeMotion() {
             start: "top 60%",
             onEnter: () => {
               gsap.to(texto, { opacity: 1, duration: 0.5 });
-              num?.classList.add("!bg-pluma");
+              num?.classList.add("!bg-cielo");
             },
             onLeaveBack: () => {
               gsap.to(texto, { opacity: 0.4, duration: 0.3 });
-              num?.classList.remove("!bg-pluma");
+              num?.classList.remove("!bg-cielo");
             },
           });
         });
@@ -127,6 +127,45 @@ export function HomeMotion() {
           },
         );
       });
+
+      // Sobre mí: el retrato se abre desde el centro y la foto hace parallax con el scroll.
+      const retrato = document.querySelector<HTMLElement>("[data-retrato]");
+      if (retrato) {
+        gsap.fromTo(
+          retrato,
+          { clipPath: "inset(12% 12% 12% 12% round 18px)" },
+          {
+            clipPath: "inset(0% 0% 0% 0% round 18px)",
+            duration: 1.2,
+            ease: "expo.out",
+            scrollTrigger: { trigger: retrato, start: "top 85%", once: true },
+          },
+        );
+        gsap.fromTo(
+          retrato.querySelector("img"),
+          { scale: 1.18, yPercent: -4 },
+          {
+            scale: 1,
+            yPercent: 4,
+            ease: "none",
+            scrollTrigger: { trigger: retrato, start: "top bottom", end: "bottom top", scrub: true },
+          },
+        );
+      }
+
+      // Tecnología: las herramientas se encienden una tras otra.
+      const herramientas = gsap.utils.toArray<HTMLElement>("#tecnologia [data-tilt]");
+      if (herramientas.length) {
+        gsap.from(herramientas, {
+          opacity: 0,
+          y: 24,
+          scale: 0.96,
+          duration: 0.8,
+          ease: "expo.out",
+          stagger: 0.08,
+          scrollTrigger: { trigger: herramientas[0], start: "top 88%", once: true },
+        });
+      }
 
       // CTA final: el título aparece por letras.
       const titulo = document.querySelector<HTMLElement>("[data-cta-titulo]");

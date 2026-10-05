@@ -53,47 +53,53 @@ vec3 snoiseVec3(vec3 p) {
 }
 `;
 
-export const vertexShader = /* glsl */ `
+
+/**
+ * Movimiento compartido por puntos y líneas: morph escalonado, disolución, turbulencia,
+ * vida en reposo, dispersión por velocidad de scroll, entrada en espiral, puntero y onda.
+ * Devuelve la posición en mundo; deja en `vP` el progreso de la partícula y en `vBoost`
+ * cuánto brilla extra (pulso de datos + onda).
+ */
+const morph = /* glsl */ `
 #define PI 3.141592653589793
 uniform float uProgress;
 uniform float uTime;
-uniform float uSize;
-uniform float uPixelRatio;
 uniform float uNoise;
 uniform float uDrift;
 uniform float uIntro;
-uniform float uAlpha;
+uniform float uVelocity;
 uniform vec3 uPointer;
 uniform float uPointerOn;
+uniform vec4 uRipple; // xyz centro en mundo, w = segundos desde el toque
 
 attribute vec3 aFrom;
 attribute vec3 aTo;
 attribute vec4 aRandom;
 attribute float aOrder;
-attribute vec3 aColorFrom;
-attribute vec3 aColorTo;
 
-varying vec3 vColor;
-varying float vAlpha;
+float vP;
+float vBoost;
 
 ${simplex}
 
-void main() {
-  // 1. Progreso escalonado por partícula (azar + el orden de armado de la forma destino).
+vec4 morphWorld() {
+  // 1. Progreso escalonado por partícula (azar + orden de armado de la forma destino).
   float o = mix(aRandom.x, aOrder, 0.75);
-  float p = smoothstep(o * 0.4, o * 0.4 + 0.6, uProgress);
-  vec3 pos = mix(aFrom, aTo, p);
+  vP = smoothstep(o * 0.4, o * 0.4 + 0.6, uProgress);
+  vec3 pos = mix(aFrom, aTo, vP);
 
   // 2. Disolución: máxima a mitad del tramo.
-  float dissolve = sin(p * PI) * uNoise;
+  float dissolve = sin(vP * PI) * uNoise;
   if (dissolve > 0.001) {
     pos += snoiseVec3(pos * 0.45 + aRandom.yzw * 4.0 + uTime * 0.04) * dissolve * 1.4;
   }
 
-  // Turbulencia lenta de la forma (papeles en caos, nube).
-  if (uDrift > 0.001) {
-    pos += snoiseVec3(pos * 0.25 + uTime * 0.07) * uDrift;
+  // Turbulencia lenta (papeles en caos, nube) y dispersión por velocidad de scroll.
+  float turb = uDrift + abs(uVelocity) * 0.22;
+  if (turb > 0.001) {
+    pos += snoiseVec3(pos * 0.3 + uTime * 0.09) * turb;
   }
+  pos.y += uVelocity * 0.12 * (aRandom.w - 0.5);
 
   // 3. Vida en reposo (0.02 unidades).
   pos += vec3(
@@ -102,9 +108,11 @@ void main() {
     sin(uTime * 0.5 + aRandom.w * 6.2831)
   ) * 0.02;
 
-  // Entrada: de partículas dispersas a la forma.
+  // Entrada: un remolino de partículas que converge a la forma.
   float ip = smoothstep(aRandom.y * 0.35, aRandom.y * 0.35 + 0.65, uIntro);
-  vec3 scatter = normalize(aRandom.xyz - 0.5 + 0.0001) * (5.0 + aRandom.w * 5.0);
+  float ang = aRandom.x * 6.2831 * 3.0 + uTime * 0.6;
+  float rad = 4.0 + aRandom.w * 6.0;
+  vec3 scatter = vec3(cos(ang) * rad, (aRandom.z - 0.5) * 9.0, sin(ang) * rad * 0.6 - 2.0);
   pos = mix(scatter, pos, ip);
 
   vec4 world = modelMatrix * vec4(pos, 1.0);
@@ -113,30 +121,117 @@ void main() {
   if (uPointerOn > 0.5) {
     vec2 d = world.xy - uPointer.xy;
     float l = length(d);
-    world.xy += (d / max(l, 0.0001)) * smoothstep(0.9, 0.0, l) * 0.28;
+    world.xy += (d / max(l, 0.0001)) * smoothstep(0.9, 0.0, l) * 0.3;
   }
 
-  vec4 mvPosition = viewMatrix * world;
-  gl_Position = projectionMatrix * mvPosition;
+  // Onda expansiva al tocar o hacer clic.
+  vBoost = 0.0;
+  if (uRipple.w < 1.6) {
+    vec3 dir = world.xyz - uRipple.xyz;
+    float dist = length(dir);
+    float front = uRipple.w * 4.2;
+    float wave = exp(-pow((dist - front) * 2.4, 2.0)) * (1.0 - uRipple.w / 1.6);
+    world.xyz += (dir / max(dist, 0.0001)) * wave * 0.45;
+    vBoost += wave;
+  }
 
-  // 5. Tamaño con perspectiva y variación.
-  gl_PointSize = uSize * uPixelRatio * (0.55 + aRandom.y * 0.9) * (1.0 / -mvPosition.z);
+  // Pulso de datos: una banda de luz recorre la forma siguiendo su orden de armado.
+  float flow = pow(fract(aOrder * 1.5 - uTime * 0.18), 18.0);
+  vBoost += flow * 0.9 * ip;
 
-  vColor = mix(aColorFrom, aColorTo, p);
-  vAlpha = uAlpha * mix(0.35, 1.0, ip);
+  return world;
 }
 `;
 
-export const fragmentShader = /* glsl */ `
+const pointsVertex = /* glsl */ `
+uniform float uSize;
+uniform float uSizeMul;
+uniform float uPixelRatio;
+uniform float uAlpha;
+uniform float uAlphaMul;
+
+attribute vec3 aColorFrom;
+attribute vec3 aColorTo;
+
+varying vec3 vColor;
+varying float vAlpha;
+
+${morph}
+
+void main() {
+  vec4 world = morphWorld();
+  vec4 mvPosition = viewMatrix * world;
+  gl_Position = projectionMatrix * mvPosition;
+
+  // Tamaño con perspectiva y variación; el pulso agranda un poco.
+  gl_PointSize = uSize * uSizeMul * uPixelRatio * (0.55 + aRandom.y * 0.9) * (1.0 + vBoost * 0.7)
+    * (1.0 / -mvPosition.z);
+
+  vec3 color = mix(aColorFrom, aColorTo, vP);
+  vColor = mix(color, vec3(0.86, 0.96, 1.0), clamp(vBoost, 0.0, 1.0) * 0.85);
+  float ip = smoothstep(aRandom.y * 0.35, aRandom.y * 0.35 + 0.65, uIntro);
+  vAlpha = uAlpha * uAlphaMul * mix(0.3, 1.0, ip) * (1.0 + vBoost * 0.8);
+}
+`;
+
+/** Núcleo del punto: caída radial suave. */
+const pointsFragment = /* glsl */ `
 varying vec3 vColor;
 varying float vAlpha;
 
 void main() {
   float d = length(gl_PointCoord - 0.5);
   float alpha = smoothstep(0.5, 0.0, d);
-  // Núcleo un poco más denso: el brillo se simula con la caída radial.
-  alpha = alpha * alpha * 0.85;
+  alpha = alpha * alpha * 0.9;
   if (alpha < 0.01) discard;
   gl_FragColor = vec4(vColor, alpha * vAlpha);
 }
 `;
+
+/** Halo (desktop): el mismo punto, grande y muy tenue; simula bloom sin pase extra. */
+const haloFragment = /* glsl */ `
+varying vec3 vColor;
+varying float vAlpha;
+
+void main() {
+  float d = length(gl_PointCoord - 0.5);
+  float alpha = exp(-d * d * 18.0);
+  if (alpha < 0.01) discard;
+  gl_FragColor = vec4(vColor * vec3(0.55, 0.85, 1.0), alpha * vAlpha);
+}
+`;
+
+/** Red de líneas entre partículas vecinas (la "network" de erickddp.com). */
+const linesVertex = /* glsl */ `
+uniform float uLineAlpha;
+uniform float uAlpha;
+varying float vAlpha;
+varying float vBoostOut;
+
+${morph}
+
+void main() {
+  vec4 world = morphWorld();
+  gl_Position = projectionMatrix * viewMatrix * world;
+  float ip = smoothstep(aRandom.y * 0.35, aRandom.y * 0.35 + 0.65, uIntro);
+  float dissolve = sin(vP * PI) * uNoise;
+  vAlpha = uLineAlpha * uAlpha * ip * (1.0 - dissolve) * (1.0 - min(abs(uVelocity) * 1.5, 0.8));
+  vBoostOut = vBoost;
+}
+`;
+
+const linesFragment = /* glsl */ `
+varying float vAlpha;
+varying float vBoostOut;
+
+void main() {
+  vec3 color = mix(vec3(0.22, 0.74, 0.97), vec3(0.86, 0.96, 1.0), clamp(vBoostOut, 0.0, 1.0));
+  gl_FragColor = vec4(color, vAlpha * (1.0 + vBoostOut));
+}
+`;
+
+export const shaders = {
+  points: { vertexShader: pointsVertex, fragmentShader: pointsFragment },
+  halo: { vertexShader: pointsVertex, fragmentShader: haloFragment },
+  lines: { vertexShader: linesVertex, fragmentShader: linesFragment },
+};

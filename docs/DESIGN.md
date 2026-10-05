@@ -1,4 +1,6 @@
-# Diseño: "La balanza" (V2)
+# Diseño: "La balanza" (V2) con la identidad de erickddp.com
+
+> Desde 2026-10-05 la paleta y la tipografía siguen a erickddp.com: negro puro, zinc, cielo #38BDF8 con brillo, Plus Jakarta Sans + JetBrains Mono. La tabla de tokens de abajo es la vigente en `src/app/globals.css`; ver el detalle en `DECISIONES.md`.
 
 Fuentes: `CAMBIO-V2.md` (manda) y las secciones vigentes de `PROMPT-MAESTRO.md` (paleta, tipografía, forma, retícula, prohibidos).
 
@@ -6,21 +8,19 @@ Fuentes: `CAMBIO-V2.md` (manda) y las secciones vigentes de `PROMPT-MAESTRO.md` 
 
 | Token | Valor | Rol |
 |---|---|---|
-| `noche` | #070F24 | Fondo del canvas de la balanza (más profundo que tinta) |
-| `tinta` | #0B1733 | Superficies oscuras y footer |
-| `tinta-2` | #13224A | Tarjetas elevadas y halo central del fondo |
-| `papel` | #EEF3EA | Tarjetas de precios y fichas de casos; botón principal |
-| `renglon` | #C9D8C3 | Líneas sobre papel |
-| `pluma` | #3157E0 | Foco, estados activos, columna "con estrategia", brillo de partículas |
-| `cuadre` | #D23A2C | Solo la doble raya (comparativo y footer) |
-| `ambar` | #F2A541 | "Peso, impuestos de más" en las partículas |
-| `claro` | #F3F5F1 | Texto sobre fondo oscuro y partículas base |
+| `negro` | #000000 | Fondo de página y del canvas |
+| `grafito` | #09090B | Superficies (footer, franja) |
+| `grafito-2` | #18181B | Tarjetas |
+| `blanco` | #FFFFFF | Texto (100 / 80 / 70 / 45 %) |
+| `cielo` | #38BDF8 | Acento: botones, foco, borde vivo, doble raya, partículas |
+| `cielo-300` / `cielo-500` / `cielo-700` | #7DD3FC / #0EA5E9 / #0369A1 | Variantes del acento |
+| `ambar` | #F2A541 | "Peso de más" en la balanza y la columna sin estrategia |
 
-Radios: libro 4 px (precios, casos), vidrio 22 px (tarjetas de servicio, panel del comparativo), botón 12 px.
+Radios: tarjetas 18 px, elementos chicos 12 px, botones píldora.
 
 ## Tipografía (mobile-first)
 
-- h1: `clamp(2.75rem, 6vw, 6rem)` → 44 px en 375, hasta 96 px. Interlineado 0.95, tracking −0.035em.
+- h1: `clamp(2.45rem, 5vw, 4.75rem)`, Plus Jakarta Sans 800, tracking −0.045em; la segunda línea con brillo metálico.
 - h2 (`.h2`): `clamp(2rem, 1.6rem + 1.6vw, 3.05rem)` → 32–36 px en móvil.
 - Cuerpo: 16 px en móvil, 17.5 px en desktop, interlineado 1.55. Cifras tabulares siempre.
 

@@ -9,6 +9,7 @@ import { bookingLink, waLink } from "@/lib/whatsapp";
 import { trackBooking, trackWhatsapp } from "@/lib/analytics";
 import { prefersReducedMotion } from "@/lib/motion";
 import { BalanzaEstatica } from "./BalanzaEstatica";
+import { Etiqueta } from "@/components/ui/Etiqueta";
 
 gsap.registerPlugin(useGSAP, SplitText);
 
@@ -61,27 +62,30 @@ export function Hero() {
       <BalanzaEstatica className="absolute inset-x-[var(--gutter)] top-[calc(var(--nav-h)+8px)] h-[calc(40svh-var(--nav-h)-24px)] lg:inset-x-auto lg:right-[var(--gutter)] lg:top-1/2 lg:h-[60svh] lg:w-[46%] lg:-translate-y-1/2" />
       <div className="contenedor flex min-h-svh flex-col justify-end pb-[calc(96px+env(safe-area-inset-bottom))] pt-[40svh] md:pb-24 lg:grid lg:grid-cols-12 lg:items-center lg:pb-16 lg:pt-[var(--nav-h)]">
         <div className="lg:col-span-6">
+          <div data-hero="sub">
+            <Etiqueta>C.P. · Estrategia fiscal</Etiqueta>
+          </div>
           <h1
             data-hero="h1"
-            className="font-display text-[clamp(2.4rem,6vw,5.5rem)] font-semibold leading-[0.95] tracking-[-0.035em] text-claro sm:whitespace-nowrap"
+            className="mt-3 font-display text-[clamp(2.45rem,5vw,4.75rem)] font-extrabold leading-[0.98] tracking-[-0.045em] text-blanco sm:whitespace-nowrap md:mt-5"
           >
             Tus impuestos,
             <br />
-            en equilibrio.
+            <span className="brillo-metal pb-[0.08em]">en equilibrio.</span>
           </h1>
           <p
             data-hero="sub"
-            className="mt-3 max-w-[44ch] text-[15px] leading-[1.55] text-claro/80 md:mt-5 md:text-lg"
+            className="mt-3 max-w-[42ch] text-[15px] leading-[1.6] text-blanco/70 md:mt-5 md:text-lg"
           >
             Contabilidad, declaraciones y estrategia fiscal para personas y empresas en todo
-            México. Pagas lo que marca la ley, ni un peso de más.
+            México. Pagas lo que marca la ley, <span className="text-blanco">ni un peso de más.</span>
           </p>
           <div data-hero="cta" className="mt-5 md:mt-8">
             <div className="flex flex-col gap-2.5 sm:flex-row sm:gap-3">
               <Button
                 href={waLink("general")}
                 external
-                className="w-full sm:w-auto"
+                className="pulso w-full sm:w-auto"
                 onClick={() => trackWhatsapp("hero", "general")}
               >
                 Escríbeme por WhatsApp
@@ -96,11 +100,18 @@ export function Hero() {
                 Agenda una llamada de 20 min
               </Button>
             </div>
-            <p className="mt-3 text-[13px] text-claro/70 md:text-sm">
-              Primera revisión gratis. Respondo en menos de 24 horas hábiles.
+            <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.14em] text-blanco/45 md:text-xs">
+              Primera revisión gratis · Respuesta en menos de 24 h hábiles
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Indicador de scroll (desktop; en móvil abajo está la barra de acciones) */}
+      <div className="chevrones pointer-events-none absolute bottom-8 left-1/2 hidden -translate-x-1/2 lg:block" aria-hidden="true">
+        <span />
+        <span />
+        <span />
       </div>
     </section>
   );

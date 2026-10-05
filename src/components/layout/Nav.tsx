@@ -83,14 +83,14 @@ export function Nav() {
   return (
     <header
       data-hero="nav"
-      className={`sobre-tinta fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
-        scrolled && !open ? "bg-tinta/80 backdrop-blur-md" : "bg-transparent"
+      className={`oscuro fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
+        scrolled && !open ? "bg-negro/85 lg:bg-negro/70 lg:backdrop-blur-md" : "bg-transparent"
       }`}
     >
       <div className="contenedor flex h-[var(--nav-h)] items-center justify-between gap-4">
         <Link
           href="/"
-          className="flex min-h-11 items-center gap-3 text-claro"
+          className="flex min-h-11 items-center gap-3 text-blanco"
           aria-label={`${site.brand}, inicio`}
         >
           <Image
@@ -113,7 +113,7 @@ export function Nav() {
               <li key={l.href}>
                 <Link
                   href={l.href}
-                  className="inline-flex min-h-11 items-center rounded-full px-4 text-[15px] text-claro/85 transition-colors duration-150 hover:bg-claro/10 hover:text-claro"
+                  className="inline-flex min-h-11 items-center rounded-full px-4 text-[15px] text-blanco/85 transition-colors duration-150 hover:bg-blanco/10 hover:text-blanco"
                 >
                   {l.label}
                 </Link>
@@ -135,7 +135,7 @@ export function Nav() {
           <button
             ref={buttonRef}
             type="button"
-            className="relative inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-boton border border-claro/25 text-claro transition-colors duration-150 hover:bg-claro/10 lg:hidden"
+            className="relative inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-boton border border-blanco/25 text-blanco transition-colors duration-150 hover:bg-blanco/10 lg:hidden"
             aria-expanded={open}
             aria-controls={MENU_ID}
             aria-label={open ? "Cerrar menú" : "Abrir menú"}
@@ -162,7 +162,7 @@ export function Nav() {
       <motion.div
         id={MENU_ID}
         ref={panelRef}
-        className="vidrio absolute inset-x-[var(--gutter)] top-[calc(var(--nav-h)-4px)] bg-tinta/90 p-3 lg:hidden"
+        className="vidrio absolute inset-x-[var(--gutter)] top-[calc(var(--nav-h)-4px)] bg-grafito/90 p-3 lg:hidden"
         initial={false}
         animate={{ opacity: open ? 1 : 0, scale: open ? 1 : 0.97, y: open ? 0 : -8 }}
         transition={{ duration: 0.6, ease: EASE_EXPO }}
@@ -181,7 +181,7 @@ export function Nav() {
               <Link
                 href={l.href}
                 onClick={() => close()}
-                className="flex min-h-12 items-center rounded-boton px-4 font-display text-xl text-claro transition-colors duration-150 hover:bg-claro/10"
+                className="flex min-h-12 items-center rounded-boton px-4 font-display text-xl text-blanco transition-colors duration-150 hover:bg-blanco/10"
               >
                 {l.label}
               </Link>

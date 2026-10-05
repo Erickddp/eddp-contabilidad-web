@@ -13,8 +13,10 @@ export type FormId = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 /** order: 0→1 por partícula; decide quién llega primero al armar la forma. */
 export type Shape = { positions: Float32Array; colors: Float32Array; order: Float32Array };
 
-const CLARO = new THREE.Color("#F3F5F1");
-const PLUMA = new THREE.Color("#3157E0");
+// Paleta de erickddp.com: blanco azulado, cielo (#38BDF8) y cielo profundo; ámbar = "peso de más".
+const CLARO = new THREE.Color("#E6F4FF");
+const PLUMA = new THREE.Color("#38BDF8");
+const PROFUNDO = new THREE.Color("#0369A1");
 const AMBAR = new THREE.Color("#F2A541");
 
 /** PRNG determinista (mulberry32) para que las formas salgan iguales en cada carga. */
@@ -54,7 +56,11 @@ function split(n: number, fractions: number[]): number[] {
 function tint(out: THREE.Color, random: () => number, plumaShare: number, accent?: THREE.Color) {
   out.copy(CLARO);
   if (accent) out.lerp(accent, 0.65 + random() * 0.35);
-  else if (random() < plumaShare) out.lerp(PLUMA, 0.3 + random() * 0.3);
+  else {
+    const r = random();
+    if (r < plumaShare) out.lerp(PLUMA, 0.45 + random() * 0.45);
+    else if (r < plumaShare + 0.12) out.lerp(PROFUNDO, 0.5 + random() * 0.3);
+  }
   return out;
 }
 
@@ -417,4 +423,83 @@ export function buildShape(form: FormId, n: number, opts: ShapeOptions = {}): Sh
     }
   })();
   return permute(raw, n);
+}
+
+/**
+ * Red de líneas: une cada una de las primeras `m` partículas con sus `k` vecinas más
+ * cercanas (dentro de `radius`) en esa forma. Devuelve pares de índices [i, j, i, j, …].
+ */
+const edgeCache = new Map<string, Uint32Array>();
+export function buildEdges(form: FormId, shape: Shape, m: number, k = 2, radius = 0.32): Uint32Array {
+  const key = `${form}:${m}`;
+  const hit = edgeCache.get(key);
+  if (hit) return hit;
+  const pos = shape.positions;
+  const cell = radius;
+  // Llave numérica de celda (sin strings: esto corre en el hilo principal del teléfono).
+  const K = 1024;
+  const key3 = (x: number, y: number, z: number) => ((x + 512) * K + (y + 512)) * K + (z + 512);
+  const grid = new Map<number, number[]>();
+  for (let i = 0; i < m; i++) {
+    const kk = key3(
+      Math.floor(pos[i * 3] / cell),
+      Math.floor(pos[i * 3 + 1] / cell),
+      Math.floor(pos[i * 3 + 2] / cell),
+    );
+    const list = grid.get(kk);
+    if (list) list.push(i);
+    else grid.set(kk, [i]);
+  }
+  const out: number[] = [];
+  const seen = new Set<number>();
+  const r2 = radius * radius;
+  const bestJ = new Int32Array(k);
+  const bestD = new Float32Array(k);
+  for (let i = 0; i < m; i++) {
+    const x = pos[i * 3];
+    const y = pos[i * 3 + 1];
+    const z = pos[i * 3 + 2];
+    const cx = Math.floor(x / cell);
+    const cy = Math.floor(y / cell);
+    const cz = Math.floor(z / cell);
+    bestJ.fill(-1);
+    bestD.fill(Infinity);
+    for (let dx = -1; dx <= 1; dx++)
+      for (let dy = -1; dy <= 1; dy++)
+        for (let dz = -1; dz <= 1; dz++) {
+          const list = grid.get(key3(cx + dx, cy + dy, cz + dz));
+          if (!list) continue;
+          for (const j of list) {
+            if (j === i) continue;
+            const ex = pos[j * 3] - x;
+            const ey = pos[j * 3 + 1] - y;
+            const ez = pos[j * 3 + 2] - z;
+            const d = ex * ex + ey * ey + ez * ez;
+            if (d >= r2 || d < 0.0004) continue;
+            // Inserta en los k mejores (k es chico).
+            for (let q = 0; q < k; q++) {
+              if (d < bestD[q]) {
+                for (let w = k - 1; w > q; w--) {
+                  bestD[w] = bestD[w - 1];
+                  bestJ[w] = bestJ[w - 1];
+                }
+                bestD[q] = d;
+                bestJ[q] = j;
+                break;
+              }
+            }
+          }
+        }
+    for (let q = 0; q < k; q++) {
+      const j = bestJ[q];
+      if (j < 0) continue;
+      const id = i < j ? i * m + j : j * m + i;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      out.push(i, j);
+    }
+  }
+  const edges = Uint32Array.from(out);
+  edgeCache.set(key, edges);
+  return edges;
 }

@@ -7,24 +7,25 @@ import { servicios, serviciosCopy, type Servicio } from "@/content/home";
 import { pricingConfig } from "@/content/pricing";
 import { trackWhatsapp } from "@/lib/analytics";
 import { waLink } from "@/lib/whatsapp";
+import { Etiqueta } from "@/components/ui/Etiqueta";
 
 /** Tarjeta compacta: lo esencial a la vista y los entregables en un desplegable. */
 function Tarjeta({ s }: { s: Servicio }) {
   return (
-    <article className="flex h-full flex-col rounded-vidrio border border-claro/10 bg-tinta-2 p-5 md:p-7">
+    <article data-tilt className="tarjeta foco borde-vivo flex h-full flex-col p-5 transition-transform duration-300 md:p-7">
       <h3 className="font-display text-xl font-semibold leading-tight tracking-[-0.02em] md:text-2xl">
         {s.nombre}
       </h3>
-      {s.paraQuien && <p className="mt-1.5 text-sm text-claro/70 md:text-[15px]">{s.paraQuien}</p>}
-      <p className="cifras mb-4 mt-4 text-sm text-claro/70">
-        Desde <span className="font-display text-lg font-semibold text-claro">{s.desde}</span>
+      {s.paraQuien && <p className="mt-1.5 text-sm text-blanco/70 md:text-[15px]">{s.paraQuien}</p>}
+      <p className="cifras mb-4 mt-4 text-sm text-blanco/70">
+        Desde <span className="font-display text-lg font-bold text-cielo-300">{s.desde}</span>
         {pricingConfig.pricesPlusTax && /^[+$]/.test(s.desde) ? " + IVA" : ""}
       </p>
       <Desplegable label="Qué incluye" className="mt-auto">
-        <ul className="space-y-1.5 text-sm text-claro/85">
+        <ul className="space-y-1.5 text-sm text-blanco/85">
           {s.entregables.map((e) => (
             <li key={e} className="flex gap-2">
-              <span aria-hidden="true" className="mt-2 h-1 w-1 shrink-0 rounded-full bg-pluma" />
+              <span aria-hidden="true" className="mt-2 h-1 w-1 shrink-0 rounded-full bg-cielo" />
               {e}
             </li>
           ))}
@@ -56,8 +57,9 @@ export function Servicios() {
         className="lg:flex lg:h-svh lg:flex-col lg:justify-center lg:overflow-hidden lg:pt-[var(--nav-h)]"
       >
         <div className="contenedor">
-          <h2 className="h2 legible text-claro">{serviciosCopy.titulo}</h2>
-          <p className="legible mt-3 max-w-[58ch] text-claro/80">{serviciosCopy.intro}</p>
+          <Etiqueta>Servicios</Etiqueta>
+          <h2 className="h2 legible mt-3 text-blanco">{serviciosCopy.titulo}</h2>
+          <p className="legible mt-3 max-w-[58ch] text-blanco/80">{serviciosCopy.intro}</p>
         </div>
 
         <div className="contenedor mt-7 lg:hidden">
@@ -79,8 +81,8 @@ export function Servicios() {
             </ul>
           </div>
           <div className="contenedor mt-8">
-            <div className="h-0.5 w-full bg-claro/15">
-              <div data-servicios-barra className="h-0.5 w-full origin-left bg-pluma motion-reduce:hidden" />
+            <div className="h-0.5 w-full bg-blanco/15">
+              <div data-servicios-barra className="h-0.5 w-full origin-left bg-cielo motion-reduce:hidden" />
             </div>
           </div>
         </div>

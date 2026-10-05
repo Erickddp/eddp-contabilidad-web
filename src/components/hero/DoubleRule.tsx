@@ -58,7 +58,7 @@ export function DoubleRule({ className = "", draw = "view" }: Props) {
           x2="100"
           y2={y}
           pathLength={100}
-          stroke="var(--color-cuadre)"
+          stroke="var(--color-cielo)"
           strokeWidth="2"
           strokeDasharray="100"
           strokeDashoffset={0}

@@ -51,7 +51,7 @@ export function Carrusel({ items, label, desdeMd = "", itemClass }: Props) {
         {items.map((it, i) => (
           <li
             key={i}
-            className={`carrusel-item w-[84%] max-w-[360px] shrink-0 snap-start md:w-auto md:max-w-none ${itemClass?.(i) ?? ""}`}
+            className={`carrusel-item w-[84%] max-w-[360px] shrink-0 snap-start md:w-auto md:max-w-none ${i === actual ? "carrusel-activo" : ""} ${itemClass?.(i) ?? ""}`}
           >
             {it}
           </li>
@@ -59,13 +59,13 @@ export function Carrusel({ items, label, desdeMd = "", itemClass }: Props) {
       </ul>
       {/* Avance: solo donde es carrusel */}
       <div className={`mt-4 flex items-center gap-3 ${desdeMd ? "md:hidden" : ""}`} aria-hidden="true">
-        <div className="h-0.5 flex-1 bg-claro/15">
+        <div className="h-0.5 flex-1 bg-blanco/15">
           <div
-            className="h-0.5 origin-left bg-pluma transition-transform duration-500 ease-[var(--ease-expo)]"
+            className="h-0.5 origin-left bg-cielo transition-transform duration-500 ease-[var(--ease-expo)]"
             style={{ transform: `scaleX(${(actual + 1) / items.length})` }}
           />
         </div>
-        <span className="cifras text-xs text-claro/60">
+        <span className="cifras text-xs text-blanco/60">
           {actual + 1} / {items.length}
         </span>
       </div>

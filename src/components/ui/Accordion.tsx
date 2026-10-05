@@ -18,21 +18,21 @@ export function Accordion({ items }: { items: Item[] }) {
         const isOpen = open === i;
         const id = `${base}-${i}`;
         return (
-          <li key={it.q} className="border-t border-claro/12 bg-noche/55 last:border-b">
+          <li key={it.q} className="border-t border-blanco/10 last:border-b">
             <h3>
               <button
                 type="button"
                 aria-expanded={isOpen}
                 aria-controls={id}
                 onClick={() => setOpen(isOpen ? null : i)}
-                className="flex min-h-14 w-full cursor-pointer items-center justify-between gap-4 py-3 text-left font-display text-base font-medium tracking-[-0.01em] text-claro md:text-lg"
+                className="flex min-h-14 w-full cursor-pointer items-center justify-between gap-4 py-3 text-left font-display text-base font-medium tracking-[-0.01em] text-blanco md:text-lg"
               >
-                {it.q}
+                <span className={isOpen ? "text-cielo-300" : ""}>{it.q}</span>
                 <motion.span
                   aria-hidden="true"
                   animate={{ rotate: isOpen ? 45 : 0 }}
                   transition={{ duration: 0.4, ease: EASE_EXPO }}
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-claro/20"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-blanco/20"
                 >
                   <Plus size={18} />
                 </motion.span>
@@ -49,7 +49,7 @@ export function Accordion({ items }: { items: Item[] }) {
                   transition={{ duration: 0.5, ease: EASE_EXPO }}
                   className="overflow-hidden"
                 >
-                  <p className="max-w-[64ch] pb-4 pr-10 text-sm text-claro/80 md:text-[15px]">{it.a}</p>
+                  <p className="max-w-[64ch] pb-4 pr-10 text-sm text-blanco/80 md:text-[15px]">{it.a}</p>
                 </motion.div>
               )}
             </AnimatePresence>

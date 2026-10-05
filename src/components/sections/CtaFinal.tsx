@@ -5,6 +5,7 @@ import { ctaFinal } from "@/content/home";
 import { trackBooking, trackWhatsapp } from "@/lib/analytics";
 import { bookingLink, waLink } from "@/lib/whatsapp";
 import { BalanzaEstatica } from "@/components/hero/BalanzaEstatica";
+import { Etiqueta } from "@/components/ui/Etiqueta";
 
 const webhook = process.env.NEXT_PUBLIC_LEAD_WEBHOOK_URL ?? "";
 
@@ -21,15 +22,16 @@ export function CtaFinal() {
     >
       <BalanzaEstatica className="absolute inset-x-[var(--gutter)] top-[12svh] h-[28svh] lg:top-[14svh] lg:h-[30svh]" />
       <div className="contenedor">
+        <Etiqueta className="mb-4">Contacto</Etiqueta>
         <h2
           data-cta-titulo
-          className="legible mx-auto max-w-[16ch] font-display text-[2.1rem] font-semibold leading-[1.02] tracking-[-0.03em] text-claro md:text-5xl lg:text-6xl"
+          className="legible mx-auto max-w-[16ch] font-display text-[2.1rem] font-semibold leading-[1.02] tracking-[-0.03em] text-blanco md:text-5xl lg:text-6xl"
         >
           {ctaFinal.titulo}
         </h2>
-        <p className="legible mx-auto mt-4 max-w-[42ch] text-claro/85">{ctaFinal.texto}</p>
+        <p className="legible mx-auto mt-4 max-w-[42ch] text-blanco/85">{ctaFinal.texto}</p>
         <div className="mt-6 flex flex-col justify-center gap-2.5 sm:flex-row sm:gap-3">
-          <Button href={waLink("general")} external onClick={() => trackWhatsapp("cta-final", "general")}>
+          <Button href={waLink("general")} external className="pulso" onClick={() => trackWhatsapp("cta-final", "general")}>
             {ctaFinal.whatsapp}
           </Button>
           <Button

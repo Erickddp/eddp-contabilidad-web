@@ -5,8 +5,8 @@ import * as THREE from "three";
 import { Canvas, useFrame } from "@react-three/fiber";
 import gsap from "gsap";
 import { DESKTOP_MIN, FORM_META, LAYOUTS, type Stop } from "./config";
-import { buildShape, rng, type FormId, type Shape } from "./shapes";
-import { fragmentShader, vertexShader } from "./shaders";
+import { buildEdges, buildShape, rng, type FormId, type Shape } from "./shapes";
+import { shaders } from "./shaders";
 import { particleState } from "./state";
 import { escenariosVisibles } from "@/content/estrategia";
 
@@ -45,13 +45,34 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const TAU = Math.PI * 2;
 const tmp = new THREE.Vector3();
 
+/** Partículas que forman la red de líneas (las primeras M del arreglo permutado). */
+const linkCount = (count: number, mobile: boolean) => Math.min(count, mobile ? 520 : 1400);
+const EDGES_PER = 2;
+
+function makeLineGeometry(maxSegments: number) {
+  const g = new THREE.BufferGeometry();
+  const verts = maxSegments * 2;
+  const dyn = (n: number) =>
+    new THREE.BufferAttribute(new Float32Array(verts * n), n).setUsage(THREE.DynamicDrawUsage);
+  g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(verts * 3), 3));
+  g.setAttribute("aFrom", dyn(3));
+  g.setAttribute("aTo", dyn(3));
+  g.setAttribute("aRandom", dyn(4));
+  g.setAttribute("aOrder", dyn(1));
+  g.setDrawRange(0, 0);
+  return g;
+}
+
 function Particles({ count, mobile }: Props) {
-  const points = useRef<THREE.Points>(null);
+  const group = useRef<THREE.Group>(null);
   const shapes = useRef(new Map<FormId, Shape>());
   const applied = useRef<{ from: Stop; to: Stop } | null>(null);
   const smooth = useRef(0);
-  const pointer = useRef({ x: 0, y: 0, on: false });
+  const pointer = useRef({ x: 0, y: 0, on: false, sx: 0, sy: 0 });
   const fps = useRef({ frames: 0, time: 0, warm: 0, reduced: false });
+  const scroll = useRef({ y: 0, last: 0, v: 0 });
+  const ripple = useRef({ x: 0, y: 0, t: 99, pending: false, nx: 0, ny: 0 });
+  const M = linkCount(count, mobile);
 
   const shape = (form: FormId) => {
     let s = shapes.current.get(form);
@@ -62,11 +83,15 @@ function Particles({ count, mobile }: Props) {
     return s;
   };
 
+  const random = useMemo(() => {
+    const r = rng(2024);
+    const arr = new Float32Array(count * 4);
+    for (let i = 0; i < arr.length; i++) arr[i] = r();
+    return arr;
+  }, [count]);
+
   const geometry = useMemo(() => {
     const g = new THREE.BufferGeometry();
-    const random = rng(2024);
-    const rand = new Float32Array(count * 4);
-    for (let i = 0; i < rand.length; i++) rand[i] = random();
     const dyn = (n: number) =>
       new THREE.BufferAttribute(new Float32Array(count * n), n).setUsage(THREE.DynamicDrawUsage);
     g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(count * 3), 3));
@@ -74,73 +99,195 @@ function Particles({ count, mobile }: Props) {
     g.setAttribute("aTo", dyn(3));
     g.setAttribute("aColorFrom", dyn(3));
     g.setAttribute("aColorTo", dyn(3));
-    g.setAttribute("aRandom", new THREE.BufferAttribute(rand, 4));
+    g.setAttribute("aRandom", new THREE.BufferAttribute(random, 4));
     g.setAttribute("aOrder", dyn(1));
     return g;
-  }, [count]);
+  }, [count, random]);
 
-  const material = useMemo(
-    () =>
-      new THREE.ShaderMaterial({
-        vertexShader,
-        fragmentShader,
-        transparent: true,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending,
-        uniforms: {
-          uProgress: { value: 0 },
-          uTime: { value: 0 },
-          uSize: { value: mobile ? 34 : 26 },
-          uPixelRatio: { value: 1 },
-          uNoise: { value: 1 },
-          uDrift: { value: 0 },
-          uIntro: { value: 0 },
-          uAlpha: { value: 1 },
-          uPointer: { value: new THREE.Vector3() },
-          uPointerOn: { value: 0 },
-        },
-      }),
+  // Halo: comparte los atributos de los puntos pero dibuja solo una muestra (30%),
+  // porque cada halo es grande y el costo de relleno manda.
+  const haloGeometry = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    for (const [name, attr] of Object.entries(geometry.attributes)) g.setAttribute(name, attr);
+    g.setDrawRange(0, Math.floor(count * 0.3));
+    return g;
+  }, [geometry, count]);
+
+  const lineGeoms = useMemo(
+    () => ({ from: makeLineGeometry(M * EDGES_PER), to: makeLineGeometry(M * EDGES_PER) }),
+    [M],
+  );
+
+  // Uniforms compartidos por puntos, halo y líneas (mismo objeto = mismo valor).
+  const uniforms = useMemo(
+    () => ({
+      uProgress: { value: 0 },
+      uTime: { value: 0 },
+      uSize: { value: mobile ? 32 : 26 },
+      uPixelRatio: { value: 1 },
+      uNoise: { value: 1 },
+      uDrift: { value: 0 },
+      uIntro: { value: 0 },
+      uAlpha: { value: 1 },
+      uVelocity: { value: 0 },
+      uPointer: { value: new THREE.Vector3() },
+      uPointerOn: { value: 0 },
+      uRipple: { value: new THREE.Vector4(0, 0, 0, 99) },
+    }),
     [mobile],
   );
 
-  useEffect(() => () => geometry.dispose(), [geometry]);
-  useEffect(() => () => material.dispose(), [material]);
+  const materials = useMemo(() => {
+    const base = { transparent: true, depthWrite: false, blending: THREE.AdditiveBlending };
+    return {
+      points: new THREE.ShaderMaterial({
+        ...base,
+        ...shaders.points,
+        uniforms: { ...uniforms, uSizeMul: { value: 1 }, uAlphaMul: { value: 1 } },
+      }),
+      // Halo solo en desktop: duplica el costo de relleno y en móvil no vale la pena.
+      halo: mobile
+        ? null
+        : new THREE.ShaderMaterial({
+            ...base,
+            ...shaders.halo,
+            uniforms: { ...uniforms, uSizeMul: { value: 3.4 }, uAlphaMul: { value: 0.1 } },
+          }),
+      linesFrom: new THREE.ShaderMaterial({
+        ...base,
+        ...shaders.lines,
+        uniforms: { ...uniforms, uLineAlpha: { value: 0 } },
+      }),
+      linesTo: new THREE.ShaderMaterial({
+        ...base,
+        ...shaders.lines,
+        uniforms: { ...uniforms, uLineAlpha: { value: 0 } },
+      }),
+    };
+  }, [uniforms, mobile]);
 
-  // Entrada: la balanza se forma desde partículas dispersas (1.4 s).
+  useEffect(
+    () => () => {
+      geometry.dispose();
+      haloGeometry.dispose();
+      lineGeoms.from.dispose();
+      lineGeoms.to.dispose();
+      Object.values(materials).forEach((m) => m?.dispose());
+    },
+    [geometry, haloGeometry, lineGeoms, materials],
+  );
+
+  // Precalcula formas y redes en tiempo ocioso (una por callback) para que el
+  // scroll no tenga picos al cambiar de sección.
   useEffect(() => {
-    const tween = gsap.to(particleState, { intro: 1, duration: 1.4, ease: "expo.out", delay: 0.1 });
+    const pendientes: FormId[] = [6, 1, 2, 3, 4, 5];
+    let id = 0;
+    const idle = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 120));
+    const cancel = window.cancelIdleCallback ?? window.clearTimeout;
+    const paso = () => {
+      const form = pendientes.shift();
+      if (form === undefined) return;
+      const s = shapes.current.get(form) ?? buildShape(form, count, { columnRatio: COLUMN_RATIO });
+      shapes.current.set(form, s);
+      buildEdges(form, s, M, EDGES_PER, FORM_META[form].lineRadius);
+      id = idle(paso) as number;
+    };
+    const start = window.setTimeout(() => (id = idle(paso) as number), 2200);
+    return () => {
+      window.clearTimeout(start);
+      cancel(id);
+    };
+  }, [count, M]);
+
+  // Entrada: un remolino de partículas que converge en la balanza (1.8 s).
+  useEffect(() => {
+    const tween = gsap.to(particleState, { intro: 1, duration: 1.8, ease: "expo.out", delay: 0.1 });
     return () => {
       tween.kill();
     };
   }, []);
 
-  // Puntero solo en desktop con mouse.
+  // Posición de scroll desde el evento (leer scrollY dentro del cuadro forzaría un
+  // layout síncrono justo después de que GSAP cambió estilos).
   useEffect(() => {
-    if (!window.matchMedia("(pointer: fine)").matches) return;
+    const onScroll = () => {
+      scroll.current.y = window.scrollY;
+    };
+    onScroll();
+    scroll.current.last = scroll.current.y;
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Puntero (desktop) y toque/clic (todos): repulsión y onda expansiva.
+  useEffect(() => {
+    const fine = window.matchMedia("(pointer: fine)").matches;
     const onMove = (e: PointerEvent) => {
+      if (!fine || e.pointerType !== "mouse") return;
       pointer.current.x = (e.clientX / window.innerWidth) * 2 - 1;
       pointer.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
       pointer.current.on = true;
     };
     const onLeave = () => (pointer.current.on = false);
+    const onDown = (e: PointerEvent) => {
+      ripple.current.nx = (e.clientX / window.innerWidth) * 2 - 1;
+      ripple.current.ny = -(e.clientY / window.innerHeight) * 2 + 1;
+      ripple.current.pending = true;
+    };
     window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointerdown", onDown, { passive: true });
     document.addEventListener("pointerleave", onLeave);
     return () => {
       window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerdown", onDown);
       document.removeEventListener("pointerleave", onLeave);
     };
   }, []);
 
+  /** Proyecta coordenadas NDC al plano z = 0. */
+  const toPlane = (cam: THREE.Camera, nx: number, ny: number, out: THREE.Vector3) => {
+    tmp.set(nx, ny, 0.5).unproject(cam).sub(cam.position).normalize();
+    return out.copy(cam.position).addScaledVector(tmp, -cam.position.z / tmp.z);
+  };
+
+  /** Reescribe una geometría de líneas con las aristas de una forma. */
+  const writeLines = (g: THREE.BufferGeometry, edges: Uint32Array, a: Shape, b: Shape) => {
+    const from = g.getAttribute("aFrom") as THREE.BufferAttribute;
+    const to = g.getAttribute("aTo") as THREE.BufferAttribute;
+    const rnd = g.getAttribute("aRandom") as THREE.BufferAttribute;
+    const ord = g.getAttribute("aOrder") as THREE.BufferAttribute;
+    const fa = from.array as Float32Array;
+    const ta = to.array as Float32Array;
+    const ra = rnd.array as Float32Array;
+    const oa = ord.array as Float32Array;
+    const n = Math.min(edges.length, fa.length / 3);
+    for (let v = 0; v < n; v++) {
+      const i = edges[v];
+      fa.set(a.positions.subarray(i * 3, i * 3 + 3), v * 3);
+      ta.set(b.positions.subarray(i * 3, i * 3 + 3), v * 3);
+      ra.set(random.subarray(i * 4, i * 4 + 4), v * 4);
+      oa[v] = b.order[i];
+    }
+    from.needsUpdate = to.needsUpdate = rnd.needsUpdate = ord.needsUpdate = true;
+    g.setDrawRange(0, n);
+  };
+
   useFrame((state, rawDt) => {
-    const obj = points.current;
+    const obj = group.current;
     if (!obj) return;
-    const geom = obj.geometry;
-    const u = (obj.material as THREE.ShaderMaterial).uniforms;
+    // Todo se toma del grafo de escena (no de los useMemo) para poder mutarlo aquí.
+    const puntos = obj.getObjectByName("puntos") as THREE.Points;
+    const halo = obj.getObjectByName("halo") as THREE.Points | undefined;
+    const lineasDesde = obj.getObjectByName("lineas-desde") as THREE.LineSegments;
+    const lineasHacia = obj.getObjectByName("lineas-hacia") as THREE.LineSegments;
+    const geom = puntos.geometry;
+    const u = (puntos.material as THREE.ShaderMaterial).uniforms;
     const { camera, size } = state;
+    const cam = camera as THREE.PerspectiveCamera;
     const dt = Math.min(rawDt, 0.1);
     const st = particleState;
 
-    // Cambio de tramo: se reescriben aFrom/aTo.
+    // Cambio de tramo: se reescriben aFrom/aTo de puntos y líneas.
     const prev = applied.current;
     if (!prev || !sameStop(prev.from, st.from) || !sameStop(prev.to, st.to)) {
       if (!prev || !sameForms(prev.from, st.from) || !sameForms(prev.to, st.to)) {
@@ -156,6 +303,10 @@ function Particles({ count, mobile }: Props) {
         set("aColorFrom", a.colors);
         set("aColorTo", b.colors);
         set("aOrder", b.order);
+        const ma = FORM_META[st.from.form];
+        const mb = FORM_META[st.to.form];
+        writeLines(lineasDesde.geometry, buildEdges(st.from.form, a, M, EDGES_PER, ma.lineRadius), a, b);
+        writeLines(lineasHacia.geometry, buildEdges(st.to.form, b, M, EDGES_PER, mb.lineRadius), a, b);
       }
       if (prev && sameStop(st.from, prev.to)) smooth.current = 0;
       else if (prev && sameStop(st.to, prev.from)) smooth.current = 1;
@@ -177,10 +328,18 @@ function Particles({ count, mobile }: Props) {
     u.uDrift.value = lerp(mf.drift, mt.drift, e);
     u.uAlpha.value = lerp(mf.alpha, mt.alpha, e);
     u.uPixelRatio.value = state.gl.getPixelRatio();
+    (lineasDesde.material as THREE.ShaderMaterial).uniforms.uLineAlpha.value = mf.lineAlpha * (1 - THREE.MathUtils.smoothstep(t, 0, 0.35));
+    (lineasHacia.material as THREE.ShaderMaterial).uniforms.uLineAlpha.value = mt.lineAlpha * THREE.MathUtils.smoothstep(t, 0.65, 1);
+
+    // Velocidad de scroll: las partículas se sueltan un poco al hacer scroll rápido.
+    const y = scroll.current.y;
+    const vRaw = THREE.MathUtils.clamp((y - scroll.current.last) / Math.max(dt, 0.001) / 2600, -1, 1);
+    scroll.current.last = y;
+    scroll.current.v += (vRaw - scroll.current.v) * (1 - Math.exp(-dt * 6));
+    u.uVelocity.value = scroll.current.v;
 
     // Encuadre: cada parada tiene su lugar en pantalla; se interpola con el tramo.
     const desktop = size.width >= DESKTOP_MIN;
-    const cam = camera as THREE.PerspectiveCamera;
     const place = (stop: Stop) => {
       const L = LAYOUTS[stop.layout][desktop ? "desktop" : "mobile"];
       const m = FORM_META[stop.form];
@@ -193,7 +352,16 @@ function Particles({ count, mobile }: Props) {
     };
     const pf = place(st.from);
     const pt = place(st.to);
-    cam.position.z = lerp(pf.z, pt.z, e);
+
+    // Cámara: dolly por sección + parallax suave (puntero en desktop, vaivén en móvil).
+    const p = pointer.current;
+    const targetX = p.on ? p.x * 0.22 : Math.sin(state.clock.elapsedTime * 0.25) * 0.08;
+    const targetY = p.on ? p.y * 0.14 : Math.cos(state.clock.elapsedTime * 0.2) * 0.05;
+    p.sx += (targetX - p.sx) * (1 - Math.exp(-dt * 3));
+    p.sy += (targetY - p.sy) * (1 - Math.exp(-dt * 3));
+    cam.position.set(p.sx, p.sy, lerp(pf.z, pt.z, e));
+    cam.lookAt(0, 0, 0);
+
     obj.position.set(lerp(pf.x, pt.x, e), lerp(pf.y, pt.y, e), 0);
     obj.scale.setScalar(lerp(pf.s, pt.s, e));
     obj.rotation.z = lerp(pf.rot, pt.rot, e);
@@ -207,14 +375,26 @@ function Particles({ count, mobile }: Props) {
     }
 
     // Puntero en el plano z = 0.
-    if (pointer.current.on && desktop) {
-      tmp.set(pointer.current.x, pointer.current.y, 0.5).unproject(cam).sub(cam.position).normalize();
-      const k = -cam.position.z / tmp.z;
-      u.uPointer.value.copy(cam.position).addScaledVector(tmp, k);
+    if (p.on && desktop) {
+      toPlane(cam, p.x, p.y, u.uPointer.value);
       u.uPointerOn.value = 1;
     } else u.uPointerOn.value = 0;
 
-    // Si el promedio de 2 s baja de 40 fps, la mitad de partículas (una sola vez).
+    // Onda expansiva.
+    const r = ripple.current;
+    if (r.pending) {
+      r.pending = false;
+      toPlane(cam, r.nx, r.ny, tmp);
+      u.uRipple.value.set(tmp.x, tmp.y, 0, 0);
+      r.t = 0;
+    }
+    if (r.t < 99) {
+      r.t += dt;
+      u.uRipple.value.w = r.t;
+      if (r.t > 2) r.t = 99;
+    }
+
+    // Si el promedio de 2 s baja de 40 fps: la mitad de partículas y sin halo (una sola vez).
     const f = fps.current;
     f.warm += rawDt;
     if (f.warm > 2.5) {
@@ -226,6 +406,7 @@ function Particles({ count, mobile }: Props) {
         if (avg < 40 && !f.reduced) {
           f.reduced = true;
           geom.setDrawRange(0, Math.floor(count / 2));
+          if (halo) halo.visible = false;
         }
         f.frames = 0;
         f.time = 0;
@@ -233,5 +414,14 @@ function Particles({ count, mobile }: Props) {
     }
   });
 
-  return <points ref={points} geometry={geometry} material={material} frustumCulled={false} />;
+  return (
+    <group ref={group}>
+      {materials.halo && (
+        <points name="halo" geometry={haloGeometry} material={materials.halo} frustumCulled={false} />
+      )}
+      <lineSegments name="lineas-desde" geometry={lineGeoms.from} material={materials.linesFrom} frustumCulled={false} />
+      <lineSegments name="lineas-hacia" geometry={lineGeoms.to} material={materials.linesTo} frustumCulled={false} />
+      <points name="puntos" geometry={geometry} material={materials.points} frustumCulled={false} />
+    </group>
+  );
 }
