@@ -8,6 +8,8 @@ import { WhatsAppFab } from "@/components/layout/WhatsAppFab";
 import { ParticleCanvas } from "@/components/particles/ParticleCanvas";
 import { Interacciones } from "@/components/layout/Interacciones";
 import { ParticleScroll } from "@/components/particles/ParticleScroll";
+import { SITE_URL, negocioJsonLd, seo } from "@/lib/seo";
+import { site } from "@/content/site.config";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -24,17 +26,41 @@ const jetbrains = JetBrains_Mono({
   display: "swap",
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://contabilidad.erickddp.com";
-
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  title: "Contador Público en línea | Frontera norte y CDMX | EDDP Servicios Contables",
-  description:
-    "Contabilidad mensual, impuestos, nómina y estrategia fiscal para personas físicas y empresas. Estímulo IVA 8% región fronteriza. Primera revisión gratis por WhatsApp.",
+  metadataBase: new URL(SITE_URL),
+  title: { default: seo.title, template: `%s | ${seo.shortTitle}` },
+  description: seo.description,
+  keywords: seo.keywords,
+  applicationName: seo.shortTitle,
+  authors: [{ name: site.owner, url: site.social.personal }],
+  creator: site.owner,
+  publisher: site.brand,
+  category: "finance",
+  alternates: { canonical: "/" },
+  formatDetection: { telephone: false, email: false, address: false },
+  openGraph: {
+    type: "website",
+    locale: "es_MX",
+    url: "/",
+    siteName: seo.shortTitle,
+    title: seo.ogTitle,
+    description: seo.description,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: seo.ogTitle,
+    description: seo.description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
+  },
 };
 
 export const viewport: Viewport = {
   themeColor: "#000000",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -44,6 +70,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <noscript>
           <style>{"[data-hero]{opacity:1!important}"}</style>
         </noscript>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(negocioJsonLd()).replace(/</g, "\\u003c") }}
+        />
       </head>
       <body className="flex min-h-screen flex-col">
         <a href="#contenido" className="skip-link">

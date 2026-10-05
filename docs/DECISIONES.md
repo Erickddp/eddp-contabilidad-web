@@ -69,3 +69,11 @@ Rendimiento (lo que se aprendió midiendo):
 - La posición de scroll se lee en un listener pasivo, no dentro del cuadro (evita layout forzado tras los cambios de estilo de GSAP).
 - Formas y redes se precalculan en tiempo ocioso después de la entrada.
 - `tests/fps.spec.ts` ahora mide en régimen estable (espera al canvas y deja pasar el arranque). Comparación justa, 10 lecturas cada una, móvil 375 px, CPU 4×, GPU real (Intel UHD 620): **versión anterior ≈ 49 fps, rediseño ≈ 44 fps** (rango 35–55). Desktop 1440 px: 54–60 fps. Si cae de 40, se reduce a la mitad de partículas y se apaga el halo.
+
+## Dominio y metadatos (2026-10-05)
+
+- El sitio se publica en `clientes.erickddp.com` (antes estaba planeado `contabilidad.erickddp.com`). La URL vive en `src/lib/seo.ts` con respaldo a esa dirección; en Vercel se fija `NEXT_PUBLIC_SITE_URL=https://clientes.erickddp.com`.
+- Metadatos con el posicionamiento V2 (todo México, sin poner la frontera en el título): title con plantilla, description, keywords, canonical, Open Graph `es_MX`, Twitter `summary_large_image`, robots y googleBot.
+- Imagen para compartir generada con `opengraph-image.tsx` (negro, cielo y la doble raya) y JSON-LD `AccountingService` + `ProfessionalService` en el layout, sin calle.
+- Íconos propios (`icon.png` 512 y `apple-icon.png` 180: logo sobre negro con borde cielo); se quitó el favicon por defecto de Next.
+- `sitemap.xml` solo lista `/` por ahora; agregar `/precios` y las landings cuando existan.
